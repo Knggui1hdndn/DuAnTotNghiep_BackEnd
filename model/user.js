@@ -3,19 +3,20 @@ const bcypt = require('bcryptjs')
 
 // Định nghĩa enum AuthType
 const AuthType = {
-  LOCAL: 'local',
-  GOOGLE: 'google',
+  LOCAL: 'LOCAL',
+  GOOGLE: 'GOOGLE',
 };
 
 // Định nghĩa enum TypeRole
-const TypeRole = {
-  ADMIN: 'admin',
-  USER: 'user',
+const RoleType = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
 };
 
 const userSchema = new mongoose.Schema({
   name: String,
   avatar: String,
+  email:String,
   address: [String],
   phoneNumber: String,
   password: String,
@@ -25,16 +26,16 @@ const userSchema = new mongoose.Schema({
     default: AuthType.LOCAL, // Giá trị mặc định là LOCAL
   },
   authGoogleId: String,
-  role: {
+  roleType: {
     type: String,
-    enum: Object.values(TypeRole), // Sử dụng giá trị của enum TypeRole
-    default: TypeRole.USER, // Giá trị mặc định là USER
+    enum: Object.values(RoleType), // Sử dụng giá trị của enum TypeRole
+    default: RoleType.USER, // Giá trị mặc định là USER
   },
 });
 userSchema.pre('save', async function (next) {
     try {
       const stal = await bcypt.genSalt(10)
-      if(this.authType == 'local'){
+      if(this.password){
         const passwordHash = await bcypt.hash(this.password, stal)
         this.password = passwordHash
       }

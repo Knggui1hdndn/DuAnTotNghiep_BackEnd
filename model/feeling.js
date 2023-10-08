@@ -17,7 +17,7 @@ const feelingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Tham chiếu đến model User
   },
-  type: {
+  typeFeeling: {
     type: String,
     enum: Object.values(TypeFeeling), // Sử dụng giá trị của enum TypeFeeling
   },

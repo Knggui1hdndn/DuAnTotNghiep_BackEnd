@@ -10,7 +10,7 @@ const server = http.createServer(app);
 
 // Set up MongoDB connection
 //exam :
-const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/asm?authMechanism=SCRAM-SHA-1&authSource=khangnd";//đổi url
+const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/DuAnTotNghiep?authMechanism=SCRAM-SHA-1&authSource=khangnd";//đổi url
 
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -18,8 +18,8 @@ mongoose
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
 const io = require("socket.io")(server);
-
-// Set up Socket.io
+  
+ // Set up Socket.io
 const users = {};
 socket(io, users);
 
@@ -30,8 +30,10 @@ app.use(passport.initialize());
 
 // Routes
 const usersRoutes = require("../DuAnTotNghiepBE/router/user");
+const authRoutes = require("../DuAnTotNghiepBE/router/auth");
 
 app.use("/users", usersRoutes);
+app.use("/auth", authRoutes);
 
 // 404 Not Found middleware
 app.use((req, res, next) => {
