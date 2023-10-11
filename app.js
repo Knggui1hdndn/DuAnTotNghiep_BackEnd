@@ -5,6 +5,9 @@ const logger = require("morgan");
 const passport = require("passport");
 const mongoose = require("mongoose");
 const socket = require("./socket");
+const dotenv = require("dotenv");
+const cors = require("cors");
+
 const app = express();
 const server = http.createServer(app);
 
@@ -29,8 +32,9 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 // Routes
-const usersRoutes = require("../DuAnTotNghiepBE/router/user");
-const authRoutes = require("../DuAnTotNghiepBE/router/auth");
+const usersRoutes = require("./router/user");
+const authRoutes = require("./router/auth");
+const { request } = require("http");
 
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
@@ -50,6 +54,6 @@ app.use((err, req, res, next) => {
 
 // Start server
 const port = 8000;
-server.listen(port, "192.168.1.181", () =>
+server.listen(port, "192.168.1.231", () =>
   console.log(`Server is listening on port ${port}`)
 );
