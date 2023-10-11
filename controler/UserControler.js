@@ -1,3 +1,1 @@
-const user = require("../model/user")
-
-
+const mongoose = require('mongoose');
