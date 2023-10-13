@@ -29,11 +29,13 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 // Routes
-const usersRoutes = require("../DuAnTotNghiepBE/router/user");
-const authRoutes = require("../DuAnTotNghiepBE/router/auth");
+const usersRoutes = require("../DuAnTotNghiep_BackEnd/router/user");
+const authRoutes = require("../DuAnTotNghiep_BackEnd/router/auth");
+const proRoutes = require("../DuAnTotNghiep_BackEnd/router/product");
 
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
+app.use("/pro",proRoutes);
 
 // 404 Not Found middleware
 app.use((req, res, next) => {
