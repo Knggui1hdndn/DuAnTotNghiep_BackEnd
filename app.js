@@ -5,6 +5,9 @@ const logger = require("morgan");
 const passport = require("passport");
 const mongoose = require("mongoose");
 const socket = require("./socket");
+const dotenv = require("dotenv");
+const cors = require("cors");
+
 const app = express();
 const server = http.createServer(app);
 
@@ -29,10 +32,12 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 // Routes
-const usersRoutes = require("../DuAnTotNghiep_BackEnd/router/user");
-const authRoutes = require("../DuAnTotNghiep_BackEnd/router/auth");
-const proRoutes = require("../DuAnTotNghiep_BackEnd/router/product");
-
+ 
+const proRoutes = require("./router/product");
+ const usersRoutes = require("./router/user");
+const authRoutes = require("./router/auth");
+const { request } = require("http");
+ 
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
 app.use("/pro",proRoutes);
@@ -52,6 +57,6 @@ app.use((err, req, res, next) => {
 
 // Start server
 const port = 8000;
-server.listen(port, "192.168.1.181", () =>
+server.listen(port, "192.168.1.231", () =>
   console.log(`Server is listening on port ${port}`)
 );
