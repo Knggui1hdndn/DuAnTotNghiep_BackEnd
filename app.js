@@ -32,12 +32,15 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 // Routes
-const usersRoutes = require("./router/user");
+ 
+const proRoutes = require("./router/product");
+ const usersRoutes = require("./router/user");
 const authRoutes = require("./router/auth");
 const { request } = require("http");
-
+ 
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
+app.use("/pro",proRoutes);
 
 // 404 Not Found middleware
 app.use((req, res, next) => {
