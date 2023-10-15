@@ -4,6 +4,6 @@ const ProControler =  require('../controler/ProductControler');
 
 router.route("/").get(ProControler.getProduct);
 router.route("/add").post(ProControler.addProduct);
-router.route("/proCat").get(ProControler.findIDCat);
+router.route("/:id").get(ProControler.findIDCat);
 
 module.exports = router

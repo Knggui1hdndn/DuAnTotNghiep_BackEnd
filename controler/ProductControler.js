@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('../model/product');
 
+
 const getProduct = async (req,res,next)=>{
 try {
     const product = await Product.find({});
@@ -31,22 +32,29 @@ const addProduct = async(req,res,next)=>{
 };
 
 const findIDCat = async(req,res,next)=>{
-    const id = req.body.idCata;
-    const{_id, name,
-        image,
-        price,
-        sold,
-        sale,
-        describe} = req.body;
-        try {
-            const proCat = await Product.findById({id});
-            res.json(proCat);
-        } catch (err) {
-            console.error("Error fetching users:", err);
-                res.status(500).send("Internal Server Error");
-        }
+    const idCata = req.param.idCata;
+    const product = await Product.find({});
+    // const{_id, name,
+    //     image,
+    //     price,
+    //     sold,
+    //     sale,
+    //     describe} = req.body;
+    //     try {
+    //         const proCat = await Product.findById({id});
+    //         res.json(proCat);
+    //     } catch (err) {
+    //         console.error("Error fetching users:", err);
+    //             res.status(500).send("Internal Server Error");
+    //     }
+    const proByCat = product.filter(product => product.idCata === idCata);
+    if(proByCat.length ===0 ){
+        res.status(404).json({message:"Không tìm thấy dữ liệu"})
+    }else{
+        res.json(proByCat);
+    }
 
-}
+};
 module.exports = {
     getProduct,
     addProduct,
