@@ -15,28 +15,27 @@ const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 const twilio = require("twilio")(accountSid, authToken);
 
 const sendOtp = async (req, res, next) => {
-    const {  email, phoneNumber, type } = req.body;
+  const { email, phoneNumber, type } = req.body;
   if (type === "phone") {
     sendOTPPhoneNumber(phoneNumber);
   } else {
     SendEmail.sendOtpEmail(email);
   }
- };
+};
 const verificaionOtp = async (req, res, next) => {
   const { otp, email, phoneNumber, type } = req.body;
   if (type === "phone") {
     verifyOTPPhoneNumber(phoneNumber, otp);
- 
   } else {
-    SendEmail.verifyOTPEmail(email,otp);
+    SendEmail.verifyOTPEmail(email, otp);
   }
- };
+};
 const updatePassword = async (req, res, next) => {
   const address = req.query.address;
   const newPass = req.header("newPass");
   console.log("Address:", address);
   console.log("New Password:", newPass);
- 
+
   try {
     // Tìm người dùng bằng số điện thoại hoặc email
     const user = await User.findOne({
@@ -122,32 +121,27 @@ const signUpLocal = async (req, res, next) => {
   }
 };
 
-
-const LoginUser=(req, res) =>{
+const LoginUser = async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  user
-    .findOne({ email: email })
-    .then((data) => {
-      //  console.log(data);
-      if (!data) {
-        res.status(400).json({ message: "Email không hợp lệ" });
-      } else {
-        bcrypt.compare(password, data.password).then((match) => {
-          console.log(match);
-          if (match) {
-            res.status(200).json({ message: "Login thành công" });
-          } else {
-            res
-              .status(400)
-              .json({ message: "Email hoặc password không chính sác" });
-          }
-        });
-      }
-    });
-}
-
-
+  await User.findOne({ email: email }).then((data) => {
+    //  console.log(data);
+    if (!data) {
+      res.status(400).json({ error: "Email không hợp lệ" });
+    } else {
+      bcrypt.compare(password, data.password).then((match) => {
+        console.log(match);
+        if (match) {
+          res.status(200).json({ message: "Login thành công" });
+        } else {
+          res
+            .status(400)
+            .json({ error: "Email hoặc password không chính sác" });
+        }
+      });
+    }
+  });
+};
 
 const verifyGoogleToken = async (idToken) => {
   try {
@@ -177,7 +171,6 @@ const verifyGoogleToken = async (idToken) => {
 
 const sendOTPPhoneNumber = async (phoneNumber) => {
   try {
- 
     twilio.verify.v2
       .services(verifySid)
       .verifications.create({ to: phoneNumber, channel: "sms" })
@@ -194,7 +187,6 @@ const sendOTPPhoneNumber = async (phoneNumber) => {
     res.status(404).json({ error: error });
   }
 };
- 
 
 const verifyOTPPhoneNumber = async (phoneNumber, otp) => {
   return res.status(200).json({ message: "OTP code has been sent" });
@@ -217,9 +209,8 @@ module.exports = {
   signUpLocal,
   LoginUser,
   authenticationGoogle,
-   sendOtp,
+  sendOtp,
   verifyOTPPhoneNumber,
   updatePassword,
   verificaionOtp,
- 
 };
