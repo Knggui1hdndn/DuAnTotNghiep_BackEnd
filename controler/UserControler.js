@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+ const mongoose = require("mongoose");
 const PayQR = require("../model/pay");
 const Product = require("../model/product");
 const GenerateOtp = require("../services/generateOtp");
@@ -50,3 +50,4 @@ const generateQrPay = async (req, res, next) => {
 };
 
 module.exports = { generateQrPay,searchProduct };
+ 

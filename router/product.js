@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const ProductControler =  require('../controler/ProductControler')
+ const ProductControler =  require('../controler/ProductControler')
  
 //  const passport = require('passport')
 // const passportConfig = require('../middelwares/passport.js')
@@ -11,3 +11,4 @@ const ProductControler =  require('../controler/ProductControler')
  router.route('/:idCategory').get( ProductControler.getProductByIdCate) 
   
 module.exports = router
+ 

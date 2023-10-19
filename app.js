@@ -6,7 +6,9 @@ const passport = require("passport");
 const mongoose = require("mongoose");
 const socket = require("./socket");
 const dotenv = require("dotenv");
-
+ 
+const cors = require("cors");
+ 
 const app = express();
 const server = http.createServer(app);
 dotenv.config();
@@ -55,7 +57,7 @@ const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("Connected to MongoDB") ;
-    addProductWithDetails();
+   // addProductWithDetails();
     })
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
@@ -71,15 +73,16 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 // Routes
-const usersRoutes = require("./router/user");
+ const usersRoutes = require("./router/user");
 const authRoutes = require("./router/auth");
 const productRoutes = require("./router/product");
 const Category = require("./model/category");
 
 app.use("/products", productRoutes);
+  
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
-
+ 
 // 404 Not Found middleware
 app.use((req, res, next) => {
   const err = new Error("Not Found");

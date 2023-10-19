@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+ const mongoose = require("mongoose");
 const { Product, ProductDetail } = require("../model/product");
 const Category = require("../model/category");
  
@@ -74,3 +74,4 @@ module.exports = {
   getProductByIdCate,
   getDetailsProduct,
 };
+ 
