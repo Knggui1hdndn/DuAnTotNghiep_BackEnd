@@ -2,8 +2,7 @@ const mongoose = require('mongoose');
 
 // Định nghĩa schema cho class Notification
 const notificationSchema = new mongoose.Schema({
-  _id: String,
-  idSender: {
+   idSender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Tham chiếu đến model User
   },

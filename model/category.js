@@ -2,8 +2,7 @@ const mongoose = require('mongoose');
 
 // Định nghĩa schema cho class Category
 const categorySchema = new mongoose.Schema({
-  _id: String,
-  category: String,
+   category: String,
 });
 
 // Tạo model Category

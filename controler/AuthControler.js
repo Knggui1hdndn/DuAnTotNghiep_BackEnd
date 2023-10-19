@@ -2,38 +2,40 @@ const mongoose = require("mongoose");
 const User = require("../model/user.js");
 const GenerateToken = require("../middelwares/passport.js").generateToken;
 const { OAuth2Client } = require("google-auth-library");
+const dotenv = require("dotenv");
+const nodemailer = require("nodemailer");
+const SendEmail = require("../services/sendEmail.js");
+dotenv.config();
 const GOOGLE_CLIENT_ID =
   "470422080037-a8nm0h5fs6tqo1p6p0chpv2co02jirvb.apps.googleusercontent.com";
-const accountSid = "AC328a59e66a3181f40ae7d9b9777f32e5";
-const authToken = "b014d6fd28d3b8ebc1512d3c1b6edd39";
-const verifySid = "VA38f04e3638a7cd8bf1ad20d50bd5892d";
+const accountSid = "ACa6de830808fa1f3989a8140b87937031";
+const authToken = "972286c1c91d37fdf82aa1a0ebc41afa";
+const verifySid = "VA999c76ae3c784af8d499962020be0754";
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 const twilio = require("twilio")(accountSid, authToken);
 
 const sendOtp = async (req, res, next) => {
-  console.log(req.header["Type"] )
-  if (req.header("Type") === "phone") {
-    sendOTPPhoneNumber(req, res, next);
+   const {  email, phoneNumber, type } = req.body;
+  if (type === "phone") {
+    sendOTPPhoneNumber(phoneNumber);
   } else {
-    sendOtpEmail(req, res, next);
+    SendEmail.sendOtpEmail(email);
   }
-  
 };
 const verificaionOtp = async (req, res, next) => {
-  console.log(req.header["Type"] )
-  if (req.header("Type") === "phone") {
-    verifyOTPPhoneNumber(req, res, next);
+  const { otp, email, phoneNumber, type } = req.body;
+  if (type === "phone") {
+    verifyOTPPhoneNumber(phoneNumber, otp);
   } else {
-    verifyOTPEmail(req, res, next);
+    SendEmail.verifyOTPEmail(email,otp);
   }
-  
 };
 const updatePassword = async (req, res, next) => {
   const address = req.query.address;
-  const newPass = req.header('newPass');
-  console.log('Address:', address);
-  console.log('New Password:', newPass);
-    try {
+  const newPass = req.header("newPass");
+  console.log("Address:", address);
+  console.log("New Password:", newPass);
+  try {
     // Tìm người dùng bằng số điện thoại hoặc email
     const user = await User.findOne({
       $or: [{ phoneNumber: address }, { email: address }],
@@ -144,19 +146,12 @@ const verifyGoogleToken = async (idToken) => {
   }
 };
 
-const sendOtpEmail = async (req, res, next) => {
-  twilio.verify.v2
-    .services(verifySid)
-    .verifications.create({ to: "khangndph20612@fpt.edu.vn", channel: "email" })
-    .then((verification) => console.log(verification.sid));
-};
-
-const sendOTPPhoneNumber = async (req, res, next) => {
+const sendOTPPhoneNumber = async (phoneNumber) => {
   try {
-    return  res.status(200).json({ message: "OTP code has been sent" });
+    //  return  res.status(200).json({ message: "OTP code has been sent" });
     twilio.verify.v2
       .services(verifySid)
-      .verifications.create({ to: req.query.address, channel: "sms" })
+      .verifications.create({ to: phoneNumber, channel: "sms" })
       .then((verification) => {
         console.log(verification.status);
         res.status(200).json({ message: "OTP code has been sent" });
@@ -167,28 +162,16 @@ const sendOTPPhoneNumber = async (req, res, next) => {
       });
   } catch (error) {
     console.error("oksokda" + error);
-      res.status(404).json({ error: error  });
+    res.status(404).json({ error: error });
   }
 };
-const verifyOTPEmail = async (req, res, next) => {
-  twilio.verify.v2
-    .services(verifySid)
-    .verificationChecks.create({
-      to: "khangndph20612@fpt.edu.vn",
-      code: "123456",
-    })
-    .then((verification_check) => console.log(verification_check.sid));
-};
-const verifyOTPPhoneNumber = async (req, res, next) => {
-  return  res.status(200).json({ message: "OTP code has been sent" });
 
-  const inputOtp = req.query.otp;
-  const phoneNumber = req.body.phoneNumber;
-
+const verifyOTPPhoneNumber = async (phoneNumber, otp) => {
+  return res.status(200).json({ message: "OTP code has been sent" });
   try {
     const verificationCheck = await twilio.verify.v2
       .services(verifySid)
-      .verificationChecks.create({ to: phoneNumber, code: inputOtp });
+      .verificationChecks.create({ to: phoneNumber, code: otp });
 
     if (verificationCheck.status === "approved") {
       next();
@@ -203,8 +186,8 @@ const verifyOTPPhoneNumber = async (req, res, next) => {
 module.exports = {
   signUpLocal,
   authenticationGoogle,
-  verifyOTPEmail,
-   sendOtp,
+  sendOtp,
   verifyOTPPhoneNumber,
-  updatePassword,verificaionOtp
+  updatePassword,
+  verificaionOtp,
 };
