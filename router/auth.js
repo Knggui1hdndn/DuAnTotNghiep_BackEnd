@@ -9,7 +9,7 @@ const AuthControler =  require('../controler/AuthControler')
  //passport.authenticate('local', { session: false }),passportConfig.customAuthenticate, 
  router.route('/google').post(AuthControler.authenticationGoogle) 
  router.route('/signUp').post( AuthControler.signUpLocal) 
- router.post('/loginUser', AuthControler.LoginUser);
+ router.post('/signIn', AuthControler.LoginUser);
  router.route('/sendOtp').post(AuthControler.sendOtp) 
  router.route('/verifyOtp').post(AuthControler.verificaionOtp) 
  router.route('/updatePassword').post(AuthControler.updatePassword) 

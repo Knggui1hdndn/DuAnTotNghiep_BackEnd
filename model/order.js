@@ -1,19 +1,52 @@
 const mongoose = require("mongoose");
 
 const detailOrderSchema = new mongoose.Schema({
-   idProduct: String,
+  idOrder: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Order",
+  },
+  idProduct: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+  },
+  idImageProductQuantity: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ImageQuantity",
+  },
+  size: String,
   quantity: Number,
   sale: Number,
   price: Number,
   intoMoney: Number,
+  isSelected:{
+    type:Boolean,
+    default:false,
+     
+  }  
+  
 });
-
+detailOrderSchema.set('strictPopulate', false);
+const payments = {
+  TRANSFER: "Transfer",
+  CASH: "Cash",
+  VIRTUAL: "Virtual",
+};
 const orderSchema = new mongoose.Schema({
-  _id: String,
-  idUser: String,
-  createAt: String,
+  idUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  createAt: {
+    type: Number,
+    default: Date.now(),
+  },
   totalAmount: String,
-  detail: [detailOrderSchema], // Sử dụng schema của DetailOrder trong mảng detail
+  isPay: Boolean,
+  payments: {
+    type: String,
+    enum: Object.values(payments), // Sử dụng giá trị của enum TypeFeeling
+    default: payments.VIRTUAL,
+  },
 });
 
 // Tạo model Product
@@ -23,4 +56,5 @@ const DetailOrder = mongoose.model("DetailOrder", detailOrderSchema);
 module.exports = {
   Order,
   DetailOrder,
+  payments,
 };

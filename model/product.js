@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { Order, DetailOrder } = require("./order");
 
 // Định nghĩa schema cho Product
 const productSchema = new mongoose.Schema({
@@ -8,10 +9,10 @@ const productSchema = new mongoose.Schema({
   sale: Number,
   description: String,
   productDetails: [
-    { 
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "ProductDetail",
-     }
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProductDetail",
+    },
   ],
   idCata: {
     type: mongoose.Schema.Types.ObjectId,
@@ -21,27 +22,85 @@ const productSchema = new mongoose.Schema({
 
 // Định nghĩa schema cho ProductDetail
 const productDetailSchema = new mongoose.Schema({
+  idProduct: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+  },
   size: String,
-  imageProducts: [
+  imageProductQuantity: [
     {
-      imageProduct: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "ImageProduct",
-      },
-      quantity: Number,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ImageQuantity",
     },
   ],
+});
+const productQuantitySchema = new mongoose.Schema({
+  idProductDetail: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ProductDetail",
+  },
+  imageProduct: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ImageProduct",
+  },
+  quantity: Number,
 });
 
 // Định nghĩa schema cho ImageProduct
 const imageProductSchema = new mongoose.Schema({
+  idImageQuantity: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ImageQuantity",
+  },
   color: String,
   image: String,
 });
+productSchema.pre('save', async function (next) {
+  const product = this;
+
+  if (product.isModified('price') || product.isModified('sale')) {
+    // Find unpaid orders
+    const unpaidOrders = await Order.find({
+      isPay: false,
+    });
+
+    // Find unpaid DetailOrders associated with unpaid orders
+    const unpaidDetailOrders = await DetailOrder.find({
+      idOrder: { $in: unpaidOrders.map(order => order._id) },
+    });
+
+    // Update the associated DetailOrder documents with the new price, sale, and intoMoney
+    await DetailOrder.updateMany(
+      { _id: { $in: unpaidDetailOrders.map(detailOrder => detailOrder._id) } },
+      {
+        $set: {
+          price: product.price,
+          sale: product.sale,
+          intoMoney: {
+            $multiply: [
+              '$quantity',
+              {
+                $subtract: [
+                  1,
+                  { $divide: ['$sale', 100] }
+                ]
+              },
+              '$price' // Use '$price' to reference the product price
+            ]
+          }
+        }
+      }
+    );
+  }
+
+  next();
+});
+
 
 // Tạo model Product
+const ImageQuantity = mongoose.model("ImageQuantity", productQuantitySchema);
 const ImageProduct = mongoose.model("ImageProduct", imageProductSchema);
 const Product = mongoose.model("Product", productSchema);
 const ProductDetail = mongoose.model("ProductDetail", productDetailSchema);
 
-module.exports = { Product, ProductDetail, ImageProduct };
+module.exports = { Product, ProductDetail, ImageProduct, ImageQuantity };

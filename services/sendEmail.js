@@ -18,7 +18,7 @@ let transporter = nodemailer.createTransport({
   logger: true,
 });
 
-const sendOtpEmail = expressAsyncHandler(async (email) => {
+const sendOtpEmail = expressAsyncHandler(async (email,res) => {
   try {
     const otp = parseInt(Math.random() * 100000);
     const newOtpEmail = await OtpEmail.create({
@@ -52,7 +52,7 @@ const sendOtpEmail = expressAsyncHandler(async (email) => {
     res.status(500).json({ error: "Lỗi khi gửi email" }); // Trả về lỗi nếu có lỗi trong quá trình xử lý yêu cầu
   }
 });
-const verifyOTPEmail = async (email, otp) => {
+const verifyOTPEmail = async (email, otp,res) => {
   // Sửa từ req.body.address thành req.body.email
   const otpEmail = await OtpEmail.findOneAndDelete({ email: email, otp: otp });
   if (otpEmail) {

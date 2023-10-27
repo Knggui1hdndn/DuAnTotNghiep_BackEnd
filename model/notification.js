@@ -14,6 +14,7 @@ const notificationSchema = new mongoose.Schema({
   title: String,
   body: String,
   createAt: Number, // Sử dụng kiểu dữ liệu số nguyên cho thời gian
+  isSeen:Boolean
 });
 
 // Tạo model Notification

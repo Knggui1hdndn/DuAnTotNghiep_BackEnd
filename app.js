@@ -15,40 +15,52 @@ dotenv.config();
 // Set up MongoDB connection
 //exam :
 const Categorys = require('./model/category'); // Import your Product model
-const { Product, ProductDetail, ImageProduct }= require('./model/product'); // Import your ProductDetail model
+const { Product, ProductDetail, ImageProduct,ImageQuantity }= require('./model/product'); // Import your ProductDetail model
  
-const addProductWithDetails = async () => {
-  const imageProduct = new ImageProduct({
-    color: "Red",
-    image: "https://cdn.dribbble.com/users/1147180/screenshots/5907734/iphone_6-7-8___1_2x.png",
-  });
-  
-  // Tạo đối tượng ProductDetail
-  const productDetail = new ProductDetail({
-    size: "Large",
-    imageProducts: [
-      {
-        imageProduct: imageProduct._id, // Gán đối tượng ImageProduct vào imageProduct
-        quantity: 10,
-      },
-    ],
-  });
-  const ca = new Category({category:"Khang"})
-  // Tạo đối tượng Product
-  const product = new Product({
-    name: "New Product",
-    price: 200,
-    sold: 0,
-    sale: 0,
-    description: "A new product description",
-    productDetails: [productDetail._id], // Gán đối tượng ProductDetail vào productDetails
-    idCata:  [ca._id], // Gán ID của danh mục
-  });
-  ca.save()
-  imageProduct.save()
-  productDetail.save()
-  product.save()
+const createSampleData = async () => {
+  try {
+    const category = new Category({ name: "Sample Category" });
+    await category.save();
+
+    const product = new Product({
+      name: "Sample Product",
+      price: 100,
+      sold: 0,
+      sale: 0,
+      description: "A sample product description",
+      idCata: category._id,
+    });
+    await product.save();
+
+    const productDetail = new ProductDetail({
+      idProduct: product._id,
+      size: "L",
+    });
+    await productDetail.save();
+
+   
+
+    const imageQuantity = new ImageQuantity({
+      idProductDetail: productDetail._id,
+      imageProduct: imageProduct._id,
+      quantity: 10,
+    });
+    await imageQuantity.save();
+    const imageProduct = new ImageProduct({
+      idImageQuantity: imageQuantity._id,
+      color: "Red",
+      image: "https://example.com/red-product-image.jpg",
+    });
+    await imageProduct.save();
+    console.log("Sample data created successfully.");
+  } catch (error) {
+    console.error("Error creating sample data:", error);
+  }
 };
+
+// Gọi hàm tạo dữ liệu mẫu
+
+
 
  
 
@@ -57,7 +69,9 @@ const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("Connected to MongoDB") ;
-   // addProductWithDetails();
+  //  createSampleData();   
+// Tạo bản ghi cho Product
+ 
     })
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
@@ -76,9 +90,11 @@ app.use(passport.initialize());
  const usersRoutes = require("./router/user");
 const authRoutes = require("./router/auth");
 const productRoutes = require("./router/product");
+const order = require("./router/order");
 const Category = require("./model/category");
 
 app.use("/products", productRoutes);
+app.use("/order", order);
   
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
