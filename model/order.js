@@ -47,6 +47,7 @@ const orderSchema = new mongoose.Schema({
     enum: Object.values(payments), // Sử dụng giá trị của enum TypeFeeling
     default: payments.VIRTUAL,
   },
+  status:String
 });
 
 // Tạo model Product

@@ -17,50 +17,6 @@ dotenv.config();
 const Categorys = require('./model/category'); // Import your Product model
 const { Product, ProductDetail, ImageProduct,ImageQuantity }= require('./model/product'); // Import your ProductDetail model
  
-const createSampleData = async () => {
-  try {
-    const category = new Category({ name: "Sample Category" });
-    await category.save();
-
-    const product = new Product({
-      name: "Sample Product",
-      price: 100,
-      sold: 0,
-      sale: 0,
-      description: "A sample product description",
-      idCata: category._id,
-    });
-    await product.save();
-
-    const productDetail = new ProductDetail({
-      idProduct: product._id,
-      size: "L",
-    });
-    await productDetail.save();
-
-   
-
-    const imageQuantity = new ImageQuantity({
-      idProductDetail: productDetail._id,
-      imageProduct: imageProduct._id,
-      quantity: 10,
-    });
-    await imageQuantity.save();
-    const imageProduct = new ImageProduct({
-      idImageQuantity: imageQuantity._id,
-      color: "Red",
-      image: "https://example.com/red-product-image.jpg",
-    });
-    await imageProduct.save();
-    console.log("Sample data created successfully.");
-  } catch (error) {
-    console.error("Error creating sample data:", error);
-  }
-};
-
-// Gọi hàm tạo dữ liệu mẫu
-
-
 
  
 
@@ -69,8 +25,7 @@ const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("Connected to MongoDB") ;
-  //  createSampleData();   
-// Tạo bản ghi cho Product
+ 
  
     })
   .catch((err) => console.error("Error connecting to MongoDB:", err));

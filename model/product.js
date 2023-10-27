@@ -48,9 +48,9 @@ const productQuantitySchema = new mongoose.Schema({
 
 // Định nghĩa schema cho ImageProduct
 const imageProductSchema = new mongoose.Schema({
-  idImageQuantity: {
+  idProduct: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "ImageQuantity",
+    ref: "Product",
   },
   color: String,
   image: String,
