@@ -147,6 +147,40 @@ const LoginUser = async (req, res) => {
   
 };
 
+const handleLogin = async (req, res) => {
+  const { name, pwd } = req.body;
+  if (!name || !pwd) return res.status(400).json({ 'message': 'Username and password are required.' });
+  const foundUser = User.name.find(person => person.name === name);
+  if (!foundUser) return res.sendStatus(401); //Unauthorized 
+  // evaluate password 
+  const match = await bcrypt.compare(pwd, foundUser.password);
+  if (match) {
+      // create JWTs
+      const accessToken = jwt.sign(
+          { "name": foundUser.name },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: '30s' }
+      );
+      const refreshToken = jwt.sign(
+          { "name": foundUser.name },
+          process.env.REFRESH_TOKEN_SECRET,
+          { expiresIn: '1d' }
+      );
+      // Saving refreshToken with current user
+      const otherUsers = User.name.filter(person => person.name !== foundUser.name);
+      const currentUser = { ...foundUser, refreshToken };
+      User.setUsers([...otherUsers, currentUser]);
+      await fsPromises.writeFile(
+          path.join(__dirname, '..', 'model', 'users.json'),
+          JSON.stringify(User.name)
+      );
+      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 });
+      res.json({ accessToken });
+  } else {
+      res.sendStatus(401);
+  }
+}
+
 const verifyGoogleToken = async (idToken) => {
   try {
     const ticket = await client.verifyIdToken({
@@ -212,6 +246,7 @@ const verifyOTPPhoneNumber = async (phoneNumber, otp,res) => {
 module.exports = {
   signUpLocal,
   LoginUser,
+  handleLogin,
   authenticationGoogle,
   sendOtp,
   verifyOTPPhoneNumber,

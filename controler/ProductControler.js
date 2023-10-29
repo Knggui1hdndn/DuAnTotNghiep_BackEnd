@@ -137,6 +137,45 @@ const getCategories = async (req, res, next) => {
   }
 };
 
+const addCategories = async (req,res,next) =>{
+  const category = req.body;
+ if(category.category == ""){
+  return res
+  .status(404)
+  .json({message:"Các trường không được để trống"});
+ }
+ const check = await Category.findOne({
+  category: category.category,
+ });
+ if(check){
+  res.status(400).json({message: "Category đã tồn tại" });
+ }
+
+ const items = new Category(category);
+ try{
+  console.log(items);
+  await items.save();
+  res.send(items);
+ }catch(error){
+  console.log(error);
+ }
+};
+const uppdateCategories = async (req, res,next)=>{
+  const category = req.params.idCategory;
+  if(category.category ==""){
+    return res
+    .status(404)
+    .json({ message: "Các trường không được để trống" });
+  }
+  const uppdateCategories = await Category.findByIdAndUpdate(
+    idCategory,
+    req.body
+  );
+  if(!uppdateCategories){
+    return res.send(404).json({ message: "categoryBook not found" });
+  }
+  res.status(200).json(uppdateCategories);
+}
 module.exports = {
   getCategories,
   getProducts,
@@ -145,4 +184,6 @@ module.exports = {
   getAllFavourites,
   addFavourite,
   deleteFavourite,
+  addCategories,
+  uppdateCategories
 };
