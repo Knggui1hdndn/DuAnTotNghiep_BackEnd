@@ -7,6 +7,10 @@ const productSchema = new mongoose.Schema({
   price: Number,
   sold: Number,
   sale: Number,
+  star: {
+    type: Number,
+    default: 0.0,
+   },
   description: String,
   productDetails: [
     {
@@ -55,10 +59,10 @@ const imageProductSchema = new mongoose.Schema({
   color: String,
   image: String,
 });
-productSchema.pre('save', async function (next) {
+productSchema.pre("save", async function (next) {
   const product = this;
 
-  if (product.isModified('price') || product.isModified('sale')) {
+  if (product.isModified("price") || product.isModified("sale")) {
     // Find unpaid orders
     const unpaidOrders = await Order.find({
       isPay: false,
@@ -66,36 +70,34 @@ productSchema.pre('save', async function (next) {
 
     // Find unpaid DetailOrders associated with unpaid orders
     const unpaidDetailOrders = await DetailOrder.find({
-      idOrder: { $in: unpaidOrders.map(order => order._id) },
+      idOrder: { $in: unpaidOrders.map((order) => order._id) },
     });
 
     // Update the associated DetailOrder documents with the new price, sale, and intoMoney
     await DetailOrder.updateMany(
-      { _id: { $in: unpaidDetailOrders.map(detailOrder => detailOrder._id) } },
+      {
+        _id: { $in: unpaidDetailOrders.map((detailOrder) => detailOrder._id) },
+      },
       {
         $set: {
           price: product.price,
           sale: product.sale,
           intoMoney: {
             $multiply: [
-              '$quantity',
+              "$quantity",
               {
-                $subtract: [
-                  1,
-                  { $divide: ['$sale', 100] }
-                ]
+                $subtract: [1, { $divide: ["$sale", 100] }],
               },
-              '$price' // Use '$price' to reference the product price
-            ]
-          }
-        }
+              "$price", // Use '$price' to reference the product price
+            ],
+          },
+        },
       }
     );
   }
 
   next();
 });
-
 
 // Tạo model Product
 const ImageQuantity = mongoose.model("ImageQuantity", productQuantitySchema);

@@ -2,6 +2,89 @@ const mongoose = require("mongoose");
 const { Order, DetailOrder, payments } = require("../model/order");
 const { Product } = require("../model/product");
 const Notification = require("../model/notification");
+const selectedAll = async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      isPay: false,
+      payments: payments.VIRTUAL, // Assuming 'payments' is a variable or an object defined elsewhere
+      idUser: req.user._id,
+    });
+
+    const result = await DetailOrder.updateMany(
+      { idOrder: order._id },
+      { isSelected: req.query.isAll }
+    );
+    console.log(result);
+    await updateTotalAmountOrder(order._id, res);
+
+    res.status(200).json({ message: "ok" });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const deleteOrderDetails = async (req, res) => {
+  try {
+    const _id = req.query.idDetailsOrder;
+    const detailOrder = await DetailOrder.findByIdAndDelete({ _id: _id });
+    if (!detailOrder) {
+      return res.status(404).json({ error: "Detail order not found" });
+    }
+
+    await updateTotalAmountOrder(detailOrder.idOrder, res);
+    res.status(201).json({ message: "Delete success" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const updateTotalAmountOrder = async (idOrder, res) => {
+  const orderDetails = await DetailOrder.find({
+    idOrder: idOrder,
+    isSelected: true,
+  });
+  var totalAmount = 0;
+
+  if (orderDetails) {
+    orderDetails.forEach((item) => {
+      totalAmount += item.intoMoney;
+    });
+  }
+
+  await Order.findOneAndUpdate(
+    { _id: idOrder },
+    { $set: { totalAmount: totalAmount } }
+  );
+};
+
+const updateDetailOrders = async (req, res, next) => {
+  try {
+    const { _id, quantity, isSelected } = req.body;
+    const detailOrder = await DetailOrder.findOneAndUpdate(
+      { _id: _id },
+      { $set: { isSelected: isSelected, quantity: quantity } },
+      { new: true }
+    )
+      .populate({
+        path: "idProduct",
+        select: "name idOrder", // Chọn các trường cần lấy
+      })
+      .populate({
+        path: "idImageProductQuantity",
+        populate: {
+          path: "imageProduct",
+        },
+      });
+    await updateTotalAmountOrder(detailOrder.idOrder, res);
+    res.status(201).json(detailOrder);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const getCountNotiAndOrderDetails = async (req, res) => {
   try {
     const orderDetails = await getDetailsOrders(req, false);
@@ -32,7 +115,10 @@ const getDetailsOrders = async (req, res) => {
       const orderDetails = await DetailOrder.find({
         idOrder: order._id,
       })
-        .populate("idProduct", "name")
+        .populate({
+          path: "idProduct",
+          select: "name", // Chọn các trường cần lấy
+        })
         .populate({
           path: "idImageProductQuantity",
           populate: {
@@ -40,7 +126,6 @@ const getDetailsOrders = async (req, res) => {
           },
         });
 
-      
       if (orderDetails) {
         // Check if there are any order details, and respond with them if found
         console.log(orderDetails);
@@ -75,6 +160,7 @@ const processDetailsOrder = async (req, res) => {
     price,
   } = req.body;
   try {
+    console.log(idProduct);
     const order = await checkOrderExist(req.user._id);
 
     if (order != null) {
@@ -228,4 +314,7 @@ module.exports = {
   processDetailsOrder,
   getCountNotiAndOrderDetails,
   getDetailsOrders,
+  selectedAll,
+  deleteOrderDetails,
+  updateDetailOrders,
 };

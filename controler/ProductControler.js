@@ -37,16 +37,28 @@ const deleteFavourite = async (req, res, next) => {
 };
 
 const getAllFavourites = async (req, res, next) => {
-  const productId = req.idProduct;
-  const userId = req.user._id;
-  return Favourite.find({ idProduct: productId, idUser: userId })
-    .exec()
-    .then((favourites) => {
-      res.json(favourites);
-    })
-    .catch((error) => {
-      res.json({ error: `${error.message}` });
+  try {
+    const favourite = await Favourite.findOne({
+       idUser: req.user._id,
     });
+
+    const product = await Product.find({
+      _id: { $in: favourite.idProduct },
+    }).populate({
+      path: "productDetails",
+      populate: {
+        path: "imageProductQuantity",
+        populate: {
+          path: "imageProduct",
+        },
+      },
+    });
+ 
+    res.status(200).json(product);
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({error:error.message})
+  }
 };
 
 const getProductByIdCate = async (req, res, next) => {

@@ -18,14 +18,23 @@ const detailOrderSchema = new mongoose.Schema({
   sale: Number,
   price: Number,
   intoMoney: Number,
-  isSelected:{
-    type:Boolean,
-    default:false,
-     
-  }  
-  
+  isSelected: {
+    type: Boolean,
+    default: false,
+  },
 });
-detailOrderSchema.set('strictPopulate', false);
+detailOrderSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  const doc = await this.model.findOne(this.getFilter());
+  if (doc) {
+    doc.intoMoney = update.$set.quantity * doc.price * (1-doc.sale / 100);
+    await doc.save();
+    console.log(this.quantity + "sđ");
+  }
+  next();
+});
+ 
+detailOrderSchema.set("strictPopulate", false);
 const payments = {
   TRANSFER: "Transfer",
   CASH: "Cash",
@@ -47,7 +56,7 @@ const orderSchema = new mongoose.Schema({
     enum: Object.values(payments), // Sử dụng giá trị của enum TypeFeeling
     default: payments.VIRTUAL,
   },
-  status:String
+  status: String,
 });
 
 // Tạo model Product

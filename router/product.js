@@ -12,7 +12,7 @@ router.route("/:idCategory").get(ProductControler.getProductByIdCate);
 router
   .route("/favourite/:idProduct")
   .post(ProductControler.addFavourite)
-  .delete(ProductControler.deleteFavourite);
-router.route("/favourites").get(ProductControler.getAllFavourites);
+  .delete(ProductControler.deleteFavourite) 
+  .get(ProductControler.getAllFavourites);
 
 module.exports = router;
