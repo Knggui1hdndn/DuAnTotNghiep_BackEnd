@@ -149,6 +149,36 @@ const getCategories = async (req, res, next) => {
   }
 };
 
+const addProduct = async(req,res,next)=>{
+  const product = new Product({
+    name  : name,
+    price : price,
+    sold : sold,
+    sale: sale,
+
+  });
+  return product
+  .save()
+  .then((result) => {
+    res.json({ message: `Add success` });
+  })
+  .catch((error) => {
+    res.json({ error: `${error.message}` });
+  });
+};
+
+const updateProduct = async(req,res,next)=>{
+  const idProduct = req.params.idProduct;
+  const updateProduct = {
+    name : req.body.name,
+    sold : req.body.sold,
+    sale : req.body.sale,
+    price : req.body.price,
+   
+  }
+
+}
+
 module.exports = {
   getCategories,
   getProducts,
@@ -157,4 +187,6 @@ module.exports = {
   getAllFavourites,
   addFavourite,
   deleteFavourite,
+  addProduct,
+  updateProduct,
 };
