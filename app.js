@@ -17,7 +17,20 @@ dotenv.config();
 const Categorys = require('./model/category'); // Import your Product model
 const { Product, ProductDetail, ImageProduct,ImageQuantity }= require('./model/product'); // Import your ProductDetail model
  
+const corsOpts = {
+  origin: '*',
 
+  methods: [
+    'GET',
+    'POST',
+  ],
+
+  allowedHeaders: [
+    'Content-Type',
+  ],
+};
+
+app.use(cors(corsOpts));
  
 
 const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/DuAnTotNghiep?authMechanism=SCRAM-SHA-1&authSource=khangnd";//đổi url
@@ -31,6 +44,7 @@ const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
 const io = require("socket.io")(server);
+
   
  // Set up Socket.io
 const users = {};
@@ -50,6 +64,7 @@ const Category = require("./model/category");
 
 app.use("/products", productRoutes);
 app.use("/order", order);
+
   
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
@@ -66,9 +81,13 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({ error: err.message });
 });
+app.use((req,res,next)=>{
+  res.setHeader('Access-Control-Allow-Origin','*');
+  next(); 
+})
  
 // Start server
 const port = 8000;
-server.listen(port, "192.168.1.181", () =>
+server.listen(port, "192.168.1.191", () =>
   console.log(`Server is listening on port ${port}`)
 );
