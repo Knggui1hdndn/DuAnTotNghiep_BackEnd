@@ -65,7 +65,8 @@ const authRoutes = require("./router/auth");
 const productRoutes = require("./router/product");
 const order = require("./router/order");
 const evaluate = require("./router/evaluate");
-const Category = require("./model/category");
+const categories = require("./router/categories");
+const favourite = require("./router/favourite")
 
 app.use("/products", productRoutes);
 app.use("/order", order);
@@ -73,6 +74,8 @@ app.use("/order", order);
 app.use("/evaluate", evaluate);
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
+app.use("/categories", categories)
+app.use("/favourite", favourite)
  
 // 404 Not Found middleware
 app.use((req, res, next) => {

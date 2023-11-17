@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router();
+const router = express.Router()
 const EvaluateControler = require("../controler/EvaluateControler");
 const multer = require("multer");
 const path = require("path");

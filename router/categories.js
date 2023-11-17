@@ -10,3 +10,5 @@ router
 .post(CategoriesControler.addCategories)
 .put( "/updateCategories/:idCategories",CategoriesControler.updateCategories)
 .delete(CategoriesControler.deleteCategories);
+
+module.exports = router
