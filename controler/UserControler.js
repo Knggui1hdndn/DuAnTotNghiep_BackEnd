@@ -1,74 +1,112 @@
- const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const PayQR = require("../model/pay");
-const Product = require("../model/product");
+const User = require("../model/user");
+const { Product } = require("../model/product");
 const GenerateOtp = require("../services/generateOtp");
 const schedule = require("node-schedule"); // Thêm "schedule"
 const { error } = require("console");
-const { Order, DetailOrder, payments } = require("../model/order");
-
-const searchProduct = async (req, res, next) => {
-  const { name, skip } = req.query;
-  Product.find({ name: { $regex: name, $options: "i" } })
-    .limit(10) // Giới hạn số lượng mục
-    .skip(skip) // Bỏ qua số lượng mục
-    .exec((err, data) => {
-      if (err) {
-        console.error("Lỗi khi truy vấn dữ liệu:", err);
-        res.status(500).json({ error: "Lỗi máy chủ nội bộ" });
-      } else {
-        res.json(data); // Trả về kết quả tìm kiếm dữ liệu
-      }
-    });
+const { Order, DetailOrder, payments, status } = require("../model/order");
+const updateProfile = async (req, res, next) => {
+  try {
+    const host = req.hostname;
+    const filePath = req.protocol + "://" + host + "/" + req.file.path;
+    console.log(filePath);
+    const avatarFile = req.file;
+    const name = req.body.name;
+    const address = req.body.address;
+    const phoneNumber = req.body.phoneNumber;
+    const email = req.body.email;
+    const userNew = await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { name, address, phoneNumber, email, avatar:filePath },
+      { new: true }
+    );
+    res.status(201).send(userNew);
+  } catch (error) {
+    res.status(400).json({ error: "Server error" });
+  }
 };
 
-const generateQrPay = async (req, res, next) => {
-  const { idOrder } = req.query;
-
-  // Define and initialize variables
-  const idUser = req.user._id; // Assuming this is the correct user ID
-   const paymentType = payments.VIRTUAL // Replace with the correct payment type
-
+const searchProduct = async (req, res, next) => {
   try {
-    // Find and update the order
-    const order = await Order.findOneAndUpdate({
-      _id:idOrder,
-      idUser: req.user._id,
-      isPay: false,
-      payments: paymentType,
-    }, { $set: { payments: payments.CASH, createAt: Date.now() } },{new:true});
+    const { name, skip } = req.query;
 
-    if (!order) {
-      return res.status(404).json({ error: 'An error occurred. Please try again' });
-    }
+    const data = await Product.find({ name: { $regex: name, $options: "i" } })
+      .populate({
+        path: "productDetails",
+        options: { limit: 1 },
 
-    // Replace with the actual URL for generating QR code
-    const qrDataURL = `https://api.vietqr.io/image/970415-113366668888-wjFfwx6.jpg?amount=${order.totalAmount}&accountNo=0867896418&accountName=NGUYEN DUY KHANG&acqId=970418&addInfo=${order.note}`;
+         populate: {
+          options: { limit: 1 },
+          path: "imageProductQuantity",
+          populate: {
+            path: "imageProduct",
+            options: { limit: 1 },
+          },
+        },
+      })
+      .limit(10)
+      .skip(skip)
+      console.error(data);
 
-    const newPayQR = new PayQR({
-      idOrder:new  mongoose.Types.ObjectId(idOrder),
-      idUser: idUser,
-      note: GenerateOtp.generator(), // Make sure GenerateOtp is defined and returns the expected value
-      url: qrDataURL,
-    });
-
-    const savedPayQR = await newPayQR.save();
-
-    // Schedule job to remove PayQR
-    const job = schedule.scheduleJob(savedPayQR.expiration, async () => {
-      const existingQR = await PayQR.findOne({ _id: savedPayQR._id });
-      if (existingQR) {
-        await existingQR.remove();
-      }
-    });
-    console.log(savedPayQR)
-
-    res.status(200).json(savedPayQR );
+    res.json(data);
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ error: "Server error" });
+    console.error("Lỗi khi truy vấn dữ liệu:", error);
+    res.status(500).json({ error: "Lỗi máy chủ nội bộ" });
   }
 };
 
 
-module.exports = { generateQrPay,searchProduct };
- 
+
+const generateQrPay = async (req, res, next) => {
+  const { idOrder } = req.query;
+  const now = Date.now();
+  const idUser = req.user._id;
+  const paymentType = payments.TRANSFER;
+  try {
+    // Find and update the order
+    const order = await Order.findOne({
+      _id: idOrder,
+    });
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ error: "An error occurred. Please try again" });
+    }
+    const payQr = await PayQR.findOne({
+      idOrder:order._id,
+      idUser: idUser,
+    });
+    console.log("ook nhe" + payQr);
+    if (payQr == null) {
+      const newPayQR = new PayQR({
+        idOrder: order._id,
+        idUser: idUser,
+        note: GenerateOtp.generator(), // Make sure GenerateOtp is defined and returns the expected value
+        totalAmount: order.totalAmount,
+      });
+      const qrDataURL = `https://api.vietqr.io/image/BIDV-0867896418-wjFfwx6.jpg?amount=${order.totalAmount}&accountNo=0867896418&accountName=NGUYEN DUY KHANG&acqId=970418&addInfo=${newPayQR.note}`;
+      newPayQR.url = qrDataURL;
+
+      const savedPayQR = await newPayQR.save();
+
+      // Schedule job to remove PayQR
+      // const job = schedule.scheduleJob(savedPayQR.expiration, async () => {
+      //   const existingQR = await PayQR.findOneAndRemove({
+      //     _id: savedPayQR._id,
+      //   });
+      //   console.log("ook nhe" + existingQR);
+      // });
+      return res.status(200).json(savedPayQR);
+    }
+    payQr.timeCurrent = Date.now();
+console.log(payQr.timeCurrent)
+    return res.status(200).json(payQr);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: "Server error" });
+  }
+};
+
+module.exports = { generateQrPay, searchProduct, updateProfile,  };

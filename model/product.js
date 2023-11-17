@@ -22,6 +22,10 @@ const productSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
   },
+  timeCreateAt:{
+    type:Number,
+    default:Date.now()
+  }
 });
 
 // Định nghĩa schema cho ProductDetail

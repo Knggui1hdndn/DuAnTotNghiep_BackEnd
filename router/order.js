@@ -4,6 +4,8 @@ const OrderControler = require("../controler/OrderControler");
 
 const passport = require("passport");
 const passportConfig = require("../middelwares/passport.js");
+router.route("/purchase") .put(OrderControler.updatePayment)
+
 router.use(passport.authenticate("jwt", { session: false }));
 router
   .route("/detail-order")
@@ -17,4 +19,6 @@ router
   .route("/count/orderDetails-notification")
   .get(OrderControler.getCountNotiAndOrderDetails);
 
-module.exports = router;
+  router.route("/").get(OrderControler.getOrderByStatus)
+  router.route("/purchase").post(OrderControler.purchase) 
+ module.exports = router;

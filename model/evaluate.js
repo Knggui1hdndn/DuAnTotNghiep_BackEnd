@@ -19,6 +19,9 @@ const evaluateSchema = new mongoose.Schema({
   star: Number,
   comment: String,
   url: [String],
+  timeCreated:{
+    type:Number 
+  }
 });
 
 // Tạo model Evaluate

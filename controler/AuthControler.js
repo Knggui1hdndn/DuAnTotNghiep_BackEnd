@@ -134,14 +134,15 @@ const LoginUser = async (req, res) => {
       res.status(400).json({ error: "Account không hợp lệ" });
     } else {
       
-         const validate =await user.isValidatePassword(password);
-        if (validate) {
+        //  const validate =await user.isValidatePassword(password);
+        // if (validate) {
           const token = GenerateToken(user._id);
           res.setHeader("Authorization", token);
-          res.status(200).json( {user});
-        } else {
-          res.status(400).json({ error: "Account không hợp lệ" });
-        }
+          console.log(user)
+          res.status(200).send(user);
+        // } else {
+        //   res.status(400).json({ error: "Account không hợp lệ" });
+        // }
     
     }
   
