@@ -62,7 +62,7 @@ const updatePassword = async (req, res, next) => {
 const authenticationGoogle = async (req, res, next) => {
   const idToken = req.header("Authorization_Google");
   const { userId, userEmail, picture, name } = await verifyGoogleToken(idToken);
-  const roleType = req.query.roleType;
+  var roleType = req.query.roleType;
 
   if(roleType){
     roleType='ADMIN'
@@ -107,7 +107,7 @@ const authenticationGoogle = async (req, res, next) => {
 
 const signUpLocal = async (req, res, next) => {
   const { username, phoneNumber, password, address } = req.body;
-  const roleType = req.query.roleType;
+  var roleType = req.query.roleType;
 
   if(roleType){
     roleType='ADMIN'
@@ -152,7 +152,7 @@ const signUpLocal = async (req, res, next) => {
 const LoginUser = async (req, res) => {
   const email = req.body.account;
   const password = req.body.password;
-  const roleType = req.query.roleType;
+  var roleType = req.query.roleType;
   if(roleType){
     roleType='ADMIN'
   }else{
@@ -178,7 +178,7 @@ const LoginUser = async (req, res) => {
         //   res.status(400).json({ error: "Account không hợp lệ" });
         // }
     
-    }
+    } 
   
 };
 
