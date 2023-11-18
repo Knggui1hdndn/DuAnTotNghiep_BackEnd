@@ -1,7 +1,100 @@
 const mongoose = require("mongoose");
-const { Order, DetailOrder, payments } = require("../model/order");
+const { Order, DetailOrder, payments, status } = require("../model/order");
 const { Product } = require("../model/product");
+const PayQR = require("../model/pay");
 const Notification = require("../model/notification");
+const updatePayment = async (req, res, next) => {
+  const { money, timePayment, note } = req.body;
+  try {
+    const pay = await PayQR.findOne({
+      note,
+      totalAmount: money,
+    })
+      .where("expiration")
+      .gt(timePayment);
+    if (pay) {
+      const order = await Order.findOneAndUpdate(
+        { _id: pay.idOrder },
+        { isPay: true },
+        { new: true }
+      );
+      
+      res.json({ success: true, order });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Payment not found or invalid timePayment",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+const getOrderByStatus = async (req, res) => {
+  try {
+    const status = req.query.status;
+    const order = await Order.find({ status: status, idUser: req.user._id });
+    console.log(order);
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+const purchase = async (req, res) => {
+  try {
+    const { address, name, phoneNumber } = req.body;
+    const payment = req.body.payments;
+    let description = "";
+    let totalAmount = 0;
+    const newIdOrder = new mongoose.Types.ObjectId();
+    const orderDetails = await DetailOrder.find({
+      idOrder: req.query.idOrder,
+      isSelected: true,
+    }).populate("idProduct", "name size");
+
+    if (orderDetails + req.query.idOrder) {
+      console.log(orderDetails);
+      await DetailOrder.updateMany(
+        {
+          idOrder: req.query.idOrder,
+          isSelected: true,
+        },
+        { $set: { idOrder: newIdOrder } }
+      );
+
+      orderDetails.forEach((item) => {
+        totalAmount += item.intoMoney;
+      });
+
+      orderDetails.forEach((orderDetail) => {
+        description += `${orderDetail.idProduct.name} (${orderDetail.size}) `;
+      });
+    }
+
+    const newOrder = new Order({
+      idUser: req.user._id,
+      _id: newIdOrder,
+      description: description,
+      payments: payments[payment],
+      address: address,
+      name: name,
+      phoneNumber: phoneNumber,
+      totalAmount: totalAmount,
+      status: status.WAIT_FOR_CONFIRMATION,
+    });
+    await newOrder.save();
+
+    if (!newOrder) {
+      throw new Error("Sever error");
+    } else {
+      return res.status(200).send(newIdOrder);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
 const selectedAll = async (req, res) => {
   try {
     const order = await Order.findOne({
@@ -15,7 +108,6 @@ const selectedAll = async (req, res) => {
       { isSelected: req.query.isAll }
     );
     console.log(result);
-    await updateTotalAmountOrder(order._id, res);
 
     res.status(200).json({ message: "ok" });
   } catch (error) {
@@ -32,30 +124,10 @@ const deleteOrderDetails = async (req, res) => {
       return res.status(404).json({ error: "Detail order not found" });
     }
 
-    await updateTotalAmountOrder(detailOrder.idOrder, res);
     res.status(201).json({ message: "Delete success" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
-
-const updateTotalAmountOrder = async (idOrder, res) => {
-  const orderDetails = await DetailOrder.find({
-    idOrder: idOrder,
-    isSelected: true,
-  });
-  var totalAmount = 0;
-
-  if (orderDetails) {
-    orderDetails.forEach((item) => {
-      totalAmount += item.intoMoney;
-    });
-  }
-
-  await Order.findOneAndUpdate(
-    { _id: idOrder },
-    { $set: { totalAmount: totalAmount } }
-  );
 };
 
 const updateDetailOrders = async (req, res, next) => {
@@ -76,7 +148,6 @@ const updateDetailOrders = async (req, res, next) => {
           path: "imageProduct",
         },
       });
-    await updateTotalAmountOrder(detailOrder.idOrder, res);
     res.status(201).json(detailOrder);
   } catch (error) {
     console.log(error);
@@ -87,18 +158,40 @@ const updateDetailOrders = async (req, res, next) => {
 
 const getCountNotiAndOrderDetails = async (req, res) => {
   try {
-    const orderDetails = await getDetailsOrders(req, false);
-    const notification = await Notification.find({
+    const orderDetails = await getCountDetailsOrder(req);
+    const notification = await Notification.countDocuments({
       idUser: req.user._id,
       isSeen: false,
     });
-    const noti = notification != null ? notification.length : 0;
     res.status(200).json({
-      countOrderDetails: orderDetails.length,
-      countNotification: noti,
+      countOrderDetails: orderDetails,
+      countNotification: notification,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+const getCountDetailsOrder = async (req) => {
+  try {
+    const order = await Order.findOne({
+      idUser: req.user._id, // Thay đổi này dựa vào cách bạn truy cập idUser
+      isPay: false,
+      payments: payments.VIRTUAL,
+    });
+
+    if (order) {
+      const orderDetailsCount = await DetailOrder.countDocuments({
+        idOrder: order._id,
+      });
+
+      return orderDetailsCount;
+    } else {
+      return 0;
+    }
+  } catch (error) {
+    // Xử lý lỗi nếu có
+    console.error(error);
+    throw new Error("Lỗi khi tìm kiếm đơn hàng.");
   }
 };
 
@@ -160,7 +253,7 @@ const processDetailsOrder = async (req, res) => {
     price,
   } = req.body;
   try {
-    console.log(idProduct);
+    console.log(idImageProductQuantity);
     const order = await checkOrderExist(req.user._id);
 
     if (order != null) {
@@ -299,9 +392,9 @@ const updateCartItem = async (
   intoMoney,
   price
 ) => {
-  orderDetails.quantity = quantity;
+  orderDetails.quantity = orderDetails.quantity+quantity;
   orderDetails.sale = sale;
-  orderDetails.intoMoney = intoMoney;
+  orderDetails.intoMoney = orderDetails.intoMoney+intoMoney;
   orderDetails.price = price;
   await orderDetails.save();
 };
@@ -317,4 +410,7 @@ module.exports = {
   selectedAll,
   deleteOrderDetails,
   updateDetailOrders,
+  getOrderByStatus,
+  purchase,
+  updatePayment,
 };

@@ -21,4 +21,4 @@ const feelingSchema = new mongoose.Schema({
 // Tạo model Feeling
 const Feeling = mongoose.model('Feeling', feelingSchema);
 
-module.exports = Feeling;
+module.exports = {Feeling,TypeFeeling};

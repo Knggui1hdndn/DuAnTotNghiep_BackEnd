@@ -27,7 +27,8 @@
     "socket.io": "^4.7.2",
     "socketio-jwt": "^4.6.2",
     "twilio": "^4.18.1",
-    "two-step-auth": "^1.1.2"
+    "two-step-auth": "^1.1.2",
+    "uuid": "^9.0.1"
   },
   "name": "DuAnTotNghiep_BackEnd",
   "version": "1.0.0",

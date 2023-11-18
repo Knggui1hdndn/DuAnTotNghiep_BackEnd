@@ -8,6 +8,7 @@ const payScheme = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Order", // Tham chiếu đến model User
   },
+  totalAmount:Number,
   url:String,
   note: String,
   timeCreateAt: {
@@ -17,11 +18,14 @@ const payScheme = new mongoose.Schema({
   expiration: {
     type: Number,
     default: function () {
-      return this.timeCreateAt +( 30 * 60 * 1000);
+       return this.timeCreateAt +( 30 * 60 * 1000);
     },
   },
+  timeCurrent:{
+    type: Number,
+    default: Date.now(),
+  },
 });
-
-const PayQR = mongoose.model("PayQR", payScheme);
+ const PayQR = mongoose.model("PayQR", payScheme);
 
 module.exports = PayQR;

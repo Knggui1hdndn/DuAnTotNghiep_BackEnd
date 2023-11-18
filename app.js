@@ -6,6 +6,7 @@ const passport = require("passport");
 const mongoose = require("mongoose");
 const socket = require("./socket");
 const dotenv = require("dotenv");
+const path = require("path");
  
 const cors = require("cors");
  
@@ -19,6 +20,18 @@ const { Product, ProductDetail, ImageProduct,ImageQuantity }= require('./model/p
  
 const corsOpts = {
   origin: '*',
+
+
+  methods: [
+    'GET',
+    'POST',
+  ],
+
+  allowedHeaders: [
+    'Content-Type',
+  ],
+};
+
 
   methods: [
     'GET',
@@ -50,22 +63,29 @@ const io = require("socket.io")(server);
 const users = {};
 socket(io, users);
 
+app.use(cors(corsOpts));
+
 // Middleware
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(passport.initialize());
+app.use('/uploads', express.static('uploads'));
 
+
+ 
 // Routes
  const usersRoutes = require("./router/user");
 const authRoutes = require("./router/auth");
 const productRoutes = require("./router/product");
 const order = require("./router/order");
+const evaluate = require("./router/evaluate");
 const Category = require("./model/category");
 
 app.use("/products", productRoutes);
 app.use("/order", order);
 
   
+app.use("/evaluate", evaluate);
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
  
@@ -75,6 +95,7 @@ app.use((req, res, next) => {
   err.status = 404;
   next(err);
 });
+console.error(Date.now());
 
 // Error handling middleware
 app.use((err, req, res, next) => {
