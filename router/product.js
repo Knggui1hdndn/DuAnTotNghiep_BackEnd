@@ -27,6 +27,7 @@ router.route("/new").get(ProductControler.getProductsNew);
 router.route("/sale").get(ProductControler.getProductsSale);
 router.route("/details/:idProduct").get(ProductControler.getDetailsProduct).post(ProductControler.addDetailsProduct);
 router.route("/image/:idProduct").get(ProductControler.getImageProduct).post(upload.single( ),ProductControler.addImageProduct);
+router.route("/productQuantity/:idProduct").post(ProductControler.addProductQuantity) ;
 
 
 
