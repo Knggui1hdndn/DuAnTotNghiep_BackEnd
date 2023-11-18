@@ -1,8 +1,78 @@
 const mongoose = require("mongoose");
-const { Product, ProductDetail } = require("../model/product");
+const {
+  Product,
+  ProductDetail,
+  ImageProduct,
+  ImageQuantity,
+} = require("../model/product");
 const Category = require("../model/category");
 const Favourite = require("../model/favourite");
 const { DetailOrder } = require("../model/order");
+
+const addProduct = async (req, res) => {
+  const { name, price, sold, sale, description, idCata } = req.body;
+  const newProduct = await new Product({
+    name,
+    price,
+    sold,
+    sale,
+    description,
+    star: 0.0,
+    idCata,
+  }).save();
+  res.status(201).send(newProduct);
+};
+
+const addDetailsProduct = async (req, res) => {
+  const idProduct =req.params.idProduct;
+  const {   size } = req.body;
+  const newProductDetail = await new ProductDetail({
+    idProduct,
+    size,
+  }).save();
+  res.status(201).send(newProductDetail);
+};
+
+const addImageProduct = async (req, res) => {
+  const idProduct =req.params.idProduct;
+  const {  color } = req.body;
+  const host = req.hostname;
+  const filePath = req.protocol + "://" + host + "/" + req.file.path;
+  const imageProduct = await new ImageProduct({
+    idProduct,
+    color,
+    filePath,
+  }).save();
+  res.status(201).send(imageProduct);
+};
+
+const getImageProduct = async (req, res) => {
+  const idProduct =req.params.idProduct;
+  const images = await ImageProduct.find({ idProduct });
+  res.status(200).send(images);
+};
+
+const addProductQuantity = async (req, res) => {
+  const { idProductDetail, imageProduct, quantity } = req.body;
+  try {
+    const newProductQuantity = await new ImageQuantity({
+      idProductDetail,
+      imageProduct,
+      quantity,
+    }).save();
+    const updatedProductDetail = await ProductDetail.findByIdAndUpdate(
+      idProductDetail,
+      {
+        $push: { imageProductQuantity: newProductQuantity._id },
+      },
+      { new: true }
+    );
+    res.status(200).send(updatedProductDetail);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const getProducts = async (req, res, next, sortField = null) => {
   try {
     const query = Product.find({}).populate({
@@ -171,4 +241,9 @@ module.exports = {
   deleteFavourite,
   getProductsSale,
   getProductsNew,
+  addProduct,
+  addDetailsProduct,
+  addImageProduct,
+  getImageProduct,
+  addProductQuantity,
 };

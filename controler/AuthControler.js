@@ -63,7 +63,13 @@ const authenticationGoogle = async (req, res, next) => {
   const idToken = req.header("Authorization_Google");
   const { userId, userEmail, picture, name } = await verifyGoogleToken(idToken);
   const user = await User.findOne({ authGoogleId: userId });
+ 
   if (user) {
+    await TokenFcm.findByIdAndUpdate(
+      { idUser: req.user._id },
+      { idUser: req.user._id, token: req.header("Fcm") },
+      { upsert: true }
+    );
     res.setHeader("Authorization", GenerateToken(user._id));
     res.status(201).json(user);
   } else {
@@ -79,6 +85,11 @@ const authenticationGoogle = async (req, res, next) => {
     const userSave = await User.create(newUser);
     console.log(user);
     if (userSave) {
+      await TokenFcm.findByIdAndUpdate(
+        { idUser: req.user._id },
+        { idUser: req.user._id, token: req.header("Fcm") },
+        { upsert: true }
+      );
       res.setHeader("Authorization", GenerateToken(newUser._id));
       res.status(201).json(newUser);
     } else {
@@ -128,12 +139,22 @@ const signUpLocal = async (req, res, next) => {
 const LoginUser = async (req, res) => {
   const email = req.body.account;
   const password = req.body.password;
- const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }]}  ) 
+  const authType = req.query.authType;
+  if(authType){
+    authType='ADMIN'
+  }else{
+    authType='USER'
+  }
+ const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],authType:authType}  ) 
     //  console.log(data);
     if (!user) {
       res.status(400).json({ error: "Account không hợp lệ" });
     } else {
-      
+      await TokenFcm.findByIdAndUpdate(
+        { idUser: req.user._id },
+        { idUser: req.user._id, token: req.header("Fcm") },
+        { upsert: true }
+      );
         //  const validate =await user.isValidatePassword(password);
         // if (validate) {
           const token = GenerateToken(user._id);

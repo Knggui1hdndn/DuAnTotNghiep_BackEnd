@@ -12,12 +12,15 @@ const productSchema = new mongoose.Schema({
     default: 0.0,
    },
   description: String,
-  productDetails: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ProductDetail",
-    },
-  ],
+  productDetails: {
+    type:[
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ProductDetail",
+      },
+    ]
+    ,default:[]
+  },
   idCata: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",

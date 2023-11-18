@@ -7,7 +7,16 @@ const mongoose = require("mongoose");
 const socket = require("./socket");
 const dotenv = require("dotenv");
 const path = require("path");
- 
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json'); // Thay đổi đường dẫn nếu cần
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+// Expose admin to be used across your app
+module.exports = admin;
+
 const cors = require("cors");
  
 const app = express();
@@ -65,11 +74,11 @@ const authRoutes = require("./router/auth");
 const productRoutes = require("./router/product");
 const order = require("./router/order");
 const evaluate = require("./router/evaluate");
-const Category = require("./model/category");
+const categories = require("./router/categories");
 
 app.use("/products", productRoutes);
+app.use("/categories", categories);
 app.use("/order", order);
-  
 app.use("/evaluate", evaluate);
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
@@ -93,3 +102,4 @@ const port = 8000;
 server.listen(port, "192.168.1.181", () =>
   console.log(`Server is listening on port ${port}`)
 );
+module.exports={admin}
