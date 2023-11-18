@@ -73,8 +73,8 @@ const authenticationGoogle = async (req, res, next) => {
  
   if (user) {
     await TokenFcm.findByIdAndUpdate(
-      { idUser: req.user._id },
-      { idUser: req.user._id, token: req.header("Fcm") },
+      { idUser:  user._id },
+      { idUser:  user._id, token: req.header("Fcm") },
       { upsert: true }
     );
     res.setHeader("Authorization", GenerateToken(user._id));
@@ -93,8 +93,8 @@ const authenticationGoogle = async (req, res, next) => {
     console.log(user);
     if (userSave) {
       await TokenFcm.findByIdAndUpdate(
-        { idUser: req.user._id },
-        { idUser: req.user._id, token: req.header("Fcm") },
+        { idUser: userSave._id },
+        { idUser: userSave._id, token: req.header("Fcm") },
         { upsert: true }
       );
       res.setHeader("Authorization", GenerateToken(newUser._id));
@@ -164,8 +164,8 @@ const LoginUser = async (req, res) => {
       res.status(400).json({ error: "Account không hợp lệ" });
     } else {
       await TokenFcm.findByIdAndUpdate(
-        { idUser: req.user._id },
-        { idUser: req.user._id, token: req.header("Fcm") },
+        { idUser:  user._id },
+        { idUser:  user._id, token: req.header("Fcm") },
         { upsert: true }
       );
         //  const validate =await user.isValidatePassword(password);
