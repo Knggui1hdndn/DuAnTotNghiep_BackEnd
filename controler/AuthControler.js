@@ -62,7 +62,14 @@ const updatePassword = async (req, res, next) => {
 const authenticationGoogle = async (req, res, next) => {
   const idToken = req.header("Authorization_Google");
   const { userId, userEmail, picture, name } = await verifyGoogleToken(idToken);
-  const user = await User.findOne({ authGoogleId: userId });
+  const roleType = req.query.roleType;
+
+  if(roleType){
+    roleType='ADMIN'
+  }else{
+    roleType='USER'
+  }
+  const user = await User.findOne({ authGoogleId: userId,roleType:roleType });
  
   if (user) {
     await TokenFcm.findByIdAndUpdate(
@@ -75,7 +82,7 @@ const authenticationGoogle = async (req, res, next) => {
   } else {
     const newUser = new User({
       authType: "GOOGLE",
-      roleType: "USER",
+      roleType: roleType,
       name: name,
       avatar: picture,
       email: userEmail,
@@ -100,9 +107,15 @@ const authenticationGoogle = async (req, res, next) => {
 
 const signUpLocal = async (req, res, next) => {
   const { username, phoneNumber, password, address } = req.body;
+  const roleType = req.query.roleType;
 
+  if(roleType){
+    roleType='ADMIN'
+  }else{
+    roleType='USER'
+  }
   try {
-    const existingUser = await User.findOne({ phoneNumber: phoneNumber });
+    const existingUser = await User.findOne({ phoneNumber: phoneNumber,roleType:roleType });
 
     if (existingUser) {
       return res.status(400).json({ error: "Account already exists" });
@@ -139,13 +152,13 @@ const signUpLocal = async (req, res, next) => {
 const LoginUser = async (req, res) => {
   const email = req.body.account;
   const password = req.body.password;
-  const authType = req.query.authType;
-  if(authType){
-    authType='ADMIN'
+  const roleType = req.query.roleType;
+  if(roleType){
+    roleType='ADMIN'
   }else{
-    authType='USER'
+    roleType='USER'
   }
- const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],authType:authType}  ) 
+ const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],roleType:roleType}  ) 
     //  console.log(data);
     if (!user) {
       res.status(400).json({ error: "Account không hợp lệ" });
