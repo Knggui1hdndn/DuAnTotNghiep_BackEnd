@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("../model/user.js");
+const TokenFcm = require("../model/tokenFcm.js");
 const GenerateToken = require("../middelwares/passport.js").generateToken;
 const { OAuth2Client } = require("google-auth-library");
 const dotenv = require("dotenv");
@@ -72,7 +73,7 @@ const authenticationGoogle = async (req, res, next) => {
   const user = await User.findOne({ authGoogleId: userId,roleType:roleType });
  
   if (user) {
-    await TokenFcm.findByIdAndUpdate(
+    await TokenFcm.findOneAndUpdate(
       { idUser:  user._id },
       { idUser:  user._id, token: req.header("Fcm") },
       { upsert: true }
@@ -92,7 +93,7 @@ const authenticationGoogle = async (req, res, next) => {
     const userSave = await User.create(newUser);
     console.log(user);
     if (userSave) {
-      await TokenFcm.findByIdAndUpdate(
+      await TokenFcm.findOneAndUpdate(
         { idUser: userSave._id },
         { idUser: userSave._id, token: req.header("Fcm") },
         { upsert: true }
@@ -124,10 +125,10 @@ const signUpLocal = async (req, res, next) => {
     const newUser = new User({
       authType: "LOCAL",
       name: username,
-      address: [address],
+      address: address,
       phoneNumber: phoneNumber,
       password: password,
-      avatar: "avatar/default.jpg",
+      avatar: "https://gocsuckhoe.com/wp-content/uploads/2020/09/avatar-facebook.jpg",
     });
 
     const userSave = await User.create(newUser);
@@ -158,27 +159,31 @@ const LoginUser = async (req, res) => {
   }else{
     roleType='USER'
   }
- const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],roleType:roleType}  ) 
-    //  console.log(data);
-    if (!user) {
-      res.status(400).json({ error: "Account không hợp lệ" });
-    } else {
-      await TokenFcm.findByIdAndUpdate(
-        { idUser:  user._id },
-        { idUser:  user._id, token: req.header("Fcm") },
-        { upsert: true }
-      );
-        //  const validate =await user.isValidatePassword(password);
-        // if (validate) {
-          const token = GenerateToken(user._id);
-          res.setHeader("Authorization", token);
-          console.log(user)
-          res.status(200).send(user);
-        // } else {
-        //   res.status(400).json({ error: "Account không hợp lệ" });
-        // }
-    
-    } 
+try {
+  const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],roleType:roleType}  ) 
+  //  console.log(data);
+  if (!user) {
+    res.status(400).json({ error: "Account không hợp lệ" });
+  } else {
+    await TokenFcm.findOneAndUpdate(
+      { idUser:  user._id },
+      { idUser:  user._id , token: req.header("Fcm") },
+      { upsert: true }
+    );
+      //  const validate =await user.isValidatePassword(password);
+      // if (validate) {
+        const token = GenerateToken(user._id);
+        res.setHeader("Authorization", token);
+        console.log(user)
+        res.status(200).send(user);
+      // } else {
+      //   res.status(400).json({ error: "Account không hợp lệ" });
+      // }
+  
+  } 
+} catch (error) {
+  console.log(error.message)
+}
   
 };
 
