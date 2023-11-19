@@ -125,10 +125,10 @@ const signUpLocal = async (req, res, next) => {
     const newUser = new User({
       authType: "LOCAL",
       name: username,
-      address: [address],
+      address:  address ,
       phoneNumber: phoneNumber,
       password: password,
-      avatar: "avatar/default.jpg",
+      avatar: "https://gocsuckhoe.com/wp-content/uploads/2020/09/avatar-facebook.jpg",
     });
 
     const userSave = await User.create(newUser);
