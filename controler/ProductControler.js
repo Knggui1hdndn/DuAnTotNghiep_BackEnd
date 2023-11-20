@@ -25,7 +25,7 @@ const addProduct = async (req, res) => {
 
 const addDetailsProduct = async (req, res) => {
   const idProduct =req.params.idProduct;
-  const {   size } = req.body;
+  const {size } = req.body;
   const newProductDetail = await new ProductDetail({
     idProduct,
     size,
@@ -41,7 +41,7 @@ const addImageProduct = async (req, res) => {
   const imageProduct = await new ImageProduct({
     idProduct,
     color,
-    filePath,
+    image:filePath,
   }).save();
   res.status(201).send(imageProduct);
 };

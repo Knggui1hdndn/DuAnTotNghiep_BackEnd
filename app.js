@@ -75,7 +75,9 @@ const productRoutes = require("./router/product");
 const order = require("./router/order");
 const evaluate = require("./router/evaluate");
 const categories = require("./router/categories");
+const notification = require("./router/notification");
 
+app.use("/notification", notification);
 app.use("/products", productRoutes);
 app.use("/categories", categories);
 app.use("/order", order);
