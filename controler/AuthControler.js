@@ -73,7 +73,11 @@ const authenticationGoogle = async (req, res, next) => {
   const user = await User.findOne({ authGoogleId: userId,roleType:roleType });
  
   if (user) {
+<<<<<<< HEAD
     await TokenFcm.findOneAndUpdate(
+=======
+    await TokenFcm.findByIdAndUpdate(
+>>>>>>> 42278c4 (ok)
       { idUser:  user._id },
       { idUser:  user._id, token: req.header("Fcm") },
       { upsert: true }
@@ -93,7 +97,11 @@ const authenticationGoogle = async (req, res, next) => {
     const userSave = await User.create(newUser);
     console.log(user);
     if (userSave) {
+<<<<<<< HEAD
       await TokenFcm.findOneAndUpdate(
+=======
+      await TokenFcm.findByIdAndUpdate(
+>>>>>>> 42278c4 (ok)
         { idUser: userSave._id },
         { idUser: userSave._id, token: req.header("Fcm") },
         { upsert: true }
@@ -161,6 +169,7 @@ const LoginUser = async (req, res) => {
   }else{
     roleType='USER'
   }
+<<<<<<< HEAD
 try {
   const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],roleType:roleType}  ) 
   //  console.log(data);
@@ -186,6 +195,29 @@ try {
 } catch (error) {
   console.log(error.message)
 }
+=======
+ const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],roleType:roleType}  ) 
+    //  console.log(data);
+    if (!user) {
+      res.status(400).json({ error: "Account không hợp lệ" });
+    } else {
+      await TokenFcm.findByIdAndUpdate(
+        { idUser:  user._id },
+        { idUser:  user._id, token: req.header("Fcm") },
+        { upsert: true }
+      );
+        //  const validate =await user.isValidatePassword(password);
+        // if (validate) {
+          const token = GenerateToken(user._id);
+          res.setHeader("Authorization", token);
+          console.log(user)
+          res.status(200).send(user);
+        // } else {
+        //   res.status(400).json({ error: "Account không hợp lệ" });
+        // }
+    
+    } 
+>>>>>>> 42278c4 (ok)
   
 };
 
