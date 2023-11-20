@@ -230,6 +230,32 @@ const getCategories = async (req, res, next) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+const updateProduct = async(req,res)=>{
+  const idProduct = req.params.idProduct;
+  const updateProduct = {
+    name : req.body.name,
+    sold : req.body.sold,
+    sale : req.body.sale,
+    price : req.body.price,
+    description : req.body.description,
+    idCata : req.body.idCata,
+    star : req.body.star,
+   
+  };
+  Product.findByIdAndUpdate(idProduct,updateProduct,{new :true})
+  .then((data)=>{
+    if(data){
+      res 
+      .status(200)
+      .json({message:"Cập nhật thành công", data : data});
+
+    }else{
+      res.status(404).json({error:"Không tìm thấy dữ liệu"});
+    }
+  }).catch((error)=>{
+    res.status(500).json({error :"Đã xảy ra lỗi"});
+  });
+}
 
 module.exports = {
   getCategories,
@@ -246,4 +272,5 @@ module.exports = {
   addImageProduct,
   getImageProduct,
   addProductQuantity,
+  updateProduct
 };
