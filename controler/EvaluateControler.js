@@ -1,5 +1,4 @@
 const idProduct = require("mongoose");
-const { Product } = require("../model/product.js");
 const Evaluate = require("../model/evaluate.js");
 const { Order, DetailOrder, payments, status } = require("../model/order.js");
 const { Feeling, TypeFeeling } = require("../model/feeling.js");
@@ -17,7 +16,6 @@ const addEvaluates = async (req, res) => {
     const imageLinks = uploadedFiles.map((file) => {
       return req.protocol + "://" + host + "/" + file.path;
     });
-
     const newEvaluate = await new Evaluate({
       idProduct: new mongoose.Types.ObjectId(idProduct),
       idUser: req.user._id,
@@ -26,35 +24,7 @@ const addEvaluates = async (req, res) => {
       url: imageLinks,
       timeCreated: Date.now(),
     }).save();
-
-    const count = await Evaluate.aggregate([
-      {
-        $match: {
-          idProduct: newEvaluate.idProduct,
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          averageStar: { $avg: "$star" },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
-    const averageStar = count.length > 0 ? count[0].averageStar : 0;
-    const numberOfEvaluations = count.length > 0 ? count[0].count : 0;
-
-    const newProduct = await Product.findOneAndUpdate(
-      {
-        _id: newEvaluate.idProduct,
-      },
-      {
-        star: averageStar,
-      }
-    ); //tính trung bình star
-
-    if (newProduct) {
+    if (newEvaluate) {
       return res.status(200).json({ newEvaluate });
     }
     return res.status(400).json({ error: "sever error" });
@@ -124,7 +94,7 @@ const updateFeeling = async (req, res, typeFeeling) => {
           idUser: req.user._id,
         },
       },
-      { returnDocument: "before", upsert: true }
+      { returnDocument: 'before', upsert: true }
     );
 
     const findEvaluate = await Evaluate.findOne({
@@ -133,13 +103,13 @@ const updateFeeling = async (req, res, typeFeeling) => {
       .populate("idUser")
       .populate("feelings");
     if (findEvaluate) {
-      const indexOfFeeling = findEvaluate.feelings.findIndex(
+       const indexOfFeeling = findEvaluate.feelings.findIndex(
         (feelingId) => feelingId._id.toString() === newFeeling._id.toString()
       );
-
-      if (indexOfFeeling !== -1 && newFeeling.typeFeeling === typeFeeling) {
+      
+       if (indexOfFeeling !== -1 &&  newFeeling.typeFeeling ===typeFeeling) {
         findEvaluate.feelings.splice(indexOfFeeling, 1);
-      } else if (indexOfFeeling === -1) {
+      } else  if (indexOfFeeling === -1) {
         findEvaluate.feelings.push(newFeeling._id);
       }
       await findEvaluate.save();
