@@ -81,6 +81,7 @@ productSchema.pre("save", async function (next) {
     });
 
     // Update the associated DetailOrder documents with the new price, sale, and intoMoney
+  try {
     await DetailOrder.updateMany(
       {
         _id: { $in: unpaidDetailOrders.map((detailOrder) => detailOrder._id) },
@@ -101,6 +102,9 @@ productSchema.pre("save", async function (next) {
         },
       }
     );
+  } catch (error) {
+    
+  }
   }
 
   next();
