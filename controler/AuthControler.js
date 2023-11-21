@@ -88,7 +88,8 @@ const authenticationGoogle = async (req, res, next) => {
       avatar: picture,
       email: userEmail,
       authGoogleId: userId,
-    });
+    }
+    );
 
     const userSave = await User.create(newUser);
     console.log(user);
@@ -171,15 +172,15 @@ try {
       { idUser:  user._id , token: req.header("Fcm") },
       { upsert: true }
     );
-      //  const validate =await user.isValidatePassword(password);
-      // if (validate) {
+       const validate =await user.isValidatePassword(password);
+      if (validate) {
         const token = GenerateToken(user._id);
         res.setHeader("Authorization", token);
         console.log(user)
         res.status(200).send(user);
-      // } else {
-      //   res.status(400).json({ error: "Account không hợp lệ" });
-      // }
+      } else {
+        res.status(400).json({ error: "Account không hợp lệ" });
+      }
   
   } 
 } catch (error) {
