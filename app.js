@@ -27,19 +27,21 @@ dotenv.config();
 const Categorys = require('./model/category'); // Import your Product model
 const { Product, ProductDetail, ImageProduct,ImageQuantity }= require('./model/product'); // Import your ProductDetail model
  
+
 const corsOpts = {
   origin: '*',
 
   methods: [
     'GET',
     'POST',
+    'PUT',
+    'DELETE',
   ],
-
+  exposedHeaders: ['Authorization'],
   allowedHeaders: [
-    'Content-Type',
+    'Origin', 'Content-Type', 'Accept', 'Authorization', 'X-Request-With',
   ],
 };
-
  
 
 const mongoURI = "mongodb+srv://khangnd:3002992121@cluster0.jb8tgpt.mongodb.net/DuAnTotNghiep?authMechanism=SCRAM-SHA-1&authSource=khangnd";//đổi url

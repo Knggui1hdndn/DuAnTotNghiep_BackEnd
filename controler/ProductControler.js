@@ -25,7 +25,7 @@ const addProduct = async (req, res) => {
 
 const addDetailsProduct = async (req, res) => {
   const idProduct =req.params.idProduct;
-  const {   size } = req.body;
+  const { size } = req.body;
   const newProductDetail = await new ProductDetail({
     idProduct,
     size,
