@@ -1,8 +1,37 @@
 const mongoose = require("mongoose");
 const { Order, DetailOrder, payments, status } = require("../model/order");
-const { Product } = require("../model/product");
+const { Product, ImageQuantity } = require("../model/product");
 const PayQR = require("../model/pay");
 const Notification = require("../model/notification");
+const TokenFcm = require("../model/tokenFcm");
+const NotificationControler = require("./Notification");
+const checkBuyNow = async (req, res, next) => {
+  try {
+    const { idQuantity, quantity } = req.query;
+    console.log(idQuantity, quantity);
+    const imageQuantity = await ImageQuantity.findOne({ _id: idQuantity });
+
+    if (imageQuantity) {
+      if (quantity <= imageQuantity.quantity) {
+        return res
+          .status(200)
+          .json({ success: true, message: "Quantity is sufficient" });
+      } else {
+        return res
+          .status(400)
+          .json({ success: false, error: "Quantity is insufficient" });
+      }
+    } else {
+      return res
+        .status(404)
+        .json({ success: false, message: "Image quantity not found" });
+    }
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
 const updatePayment = async (req, res, next) => {
   const { money, timePayment, note } = req.body;
   try {
@@ -18,7 +47,12 @@ const updatePayment = async (req, res, next) => {
         { isPay: true },
         { new: true }
       );
-      
+      const findTokenFcm = await TokenFcm.findOne({idUser:order.idUser} );
+      NotificationControler.sendNotification(findTokenFcm.token,{
+        "url":"https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
+        "title":"Payment",
+        "body":"Your order has been payment confirmed"
+      },findTokenFcm.idUser)
       res.json({ success: true, order });
     } else {
       res.status(404).json({
@@ -43,11 +77,44 @@ const getOrderByStatus = async (req, res) => {
 };
 const purchase = async (req, res) => {
   try {
-    const { address, name, phoneNumber } = req.body;
-    const payment = req.body.payments;
+    const { address, name, phoneNumber } = req.body.orderRequest;
+    const payment = req.body.orderRequest.payments;
     let description = "";
     let totalAmount = 0;
     const newIdOrder = new mongoose.Types.ObjectId();
+    if (req.query.idOrder == null) {
+      const {
+        idProduct,
+        idImageProductQuantity,
+        quantity,
+        size,
+        sale,
+        price,
+        intoMoney,
+        isSelected,
+      } = req.body.detailOrderRequest;
+
+      const newOrders = new Order({
+        idUser: req.user._id,
+        _id: newIdOrder,
+        description: `${req.body.detailOrderRequest.name} (${size}) `,
+        payments: payments[payment],
+        address: address,
+        name: name,
+        phoneNumber: phoneNumber,
+        totalAmount: intoMoney,
+        status: status.WAIT_FOR_CONFIRMATION,
+      });
+      await newOrders.save();
+
+      const newDetailOrder = new DetailOrder(req.body.detailOrderRequest );
+      await newDetailOrder.save();
+      if (!newDetailOrder) {
+        throw new Error("Sever error");
+      } else {
+        return res.status(200).send(newIdOrder);
+      }
+    }
     const orderDetails = await DetailOrder.find({
       idOrder: req.query.idOrder,
       isSelected: true,
@@ -392,9 +459,9 @@ const updateCartItem = async (
   intoMoney,
   price
 ) => {
-  orderDetails.quantity = orderDetails.quantity+quantity;
+  orderDetails.quantity = orderDetails.quantity + quantity;
   orderDetails.sale = sale;
-  orderDetails.intoMoney = orderDetails.intoMoney+intoMoney;
+  orderDetails.intoMoney = orderDetails.intoMoney + intoMoney;
   orderDetails.price = price;
   await orderDetails.save();
 };
@@ -413,4 +480,5 @@ module.exports = {
   getOrderByStatus,
   purchase,
   updatePayment,
+  checkBuyNow,
 };

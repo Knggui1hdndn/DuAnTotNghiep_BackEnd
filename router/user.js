@@ -16,7 +16,6 @@ const upload = multer({
     },
   }),
 });
-
 //const passportConfig = require('../middelwares/passport.js')
 router.use(passport.authenticate("jwt", { session: false }));
 router.route("/generate/QR").get(UserControler.generateQrPay);

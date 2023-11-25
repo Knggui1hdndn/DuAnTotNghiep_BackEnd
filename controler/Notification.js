@@ -32,16 +32,25 @@ const updateNotification = async (req, res) => {
   }
 };
 
-function sendNotification(registrationTokens, notification) {
-  const message = {
-    to: registrationTokens,
-    data: {
-      notification,
-    },
-  };
+async function sendNotification(registrationTokens, notification,idUser)  {
+  var message ;
+  if (Array.isArray(registrationTokens)) {
+     message= {
+      tokens: registrationTokens,
+      data: notification,
+    }; 
+  } else {
+    message= {
+      token: registrationTokens,
+      data: notification,
+    }; 
+  }
+  
+  console.log(message);
+  const notifications = await Notification.create({  idReceve :idUser,url:notification.url ,title:notification.title,body:notification.body,isSeen:false,createAt:Date.now() });
   admin
     .messaging()
-    .send(registrationTokens, message)
+    .send(message) // Pass the message object as the first argument
     .then((response) => {
       console.log("Successfully sent message:", response);
     })
@@ -49,5 +58,6 @@ function sendNotification(registrationTokens, notification) {
       console.error("Error sending message:", error);
     });
 }
+
 
 module.exports = { sendNotification, getNotification, updateNotification };

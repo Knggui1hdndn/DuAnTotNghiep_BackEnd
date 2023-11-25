@@ -10,6 +10,7 @@ const getCategories = async (req, res, next) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 const addCategories = async(req, res, next) =>{
     const {category} =req.body;
 
@@ -17,7 +18,6 @@ const addCategories = async(req, res, next) =>{
     try{
        await items.save();
       res.status(201).send(items);
-
     }catch(error){
       console.log(error);
     }

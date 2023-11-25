@@ -24,8 +24,8 @@ const addProduct = async (req, res) => {
 };
 
 const addDetailsProduct = async (req, res) => {
-  const idProduct =req.params.idProduct;
-  const {size } = req.body;
+  const idProduct = req.params.idProduct;
+  const { size } = req.body;
   const newProductDetail = await new ProductDetail({
     idProduct,
     size,
@@ -34,20 +34,20 @@ const addDetailsProduct = async (req, res) => {
 };
 
 const addImageProduct = async (req, res) => {
-  const idProduct =req.params.idProduct;
-  const {  color } = req.body;
+  const idProduct = req.params.idProduct;
+  const { color } = req.body;
   const host = req.hostname;
   const filePath = req.protocol + "://" + host + "/" + req.file.path;
   const imageProduct = await new ImageProduct({
     idProduct,
     color,
-    image:filePath,
+    image: filePath,
   }).save();
   res.status(201).send(imageProduct);
 };
 
 const getImageProduct = async (req, res) => {
-  const idProduct =req.params.idProduct;
+  const idProduct = req.params.idProduct;
   const images = await ImageProduct.find({ idProduct });
   res.status(200).send(images);
 };
@@ -75,7 +75,12 @@ const addProductQuantity = async (req, res) => {
 
 const getProducts = async (req, res, next, sortField = null) => {
   try {
-    const query = Product.find({}).populate({
+    const query = Product.find({})
+    .populate({
+      path: "idCata",
+      select: "category", // Chỉ lấy trường "name" từ bảng "category"
+    })
+    .populate({
       path: "productDetails",
       options: { limit: 1 },
       populate: {
@@ -86,14 +91,19 @@ const getProducts = async (req, res, next, sortField = null) => {
           options: { limit: 1 },
         },
       },
-    });
-
+    }) .lean();
+ 
     if (sortField) {
       query.sort({ [sortField]: -1 });
     }
 
     const products = await query;
-    res.json(products);
+    const modifiedResult = products.map(product => {
+      const modifiedProduct = { ...product };
+      modifiedProduct.idCata = product.idCata.category;
+      return modifiedProduct;
+    });
+    res.json(modifiedResult);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Server error" });
