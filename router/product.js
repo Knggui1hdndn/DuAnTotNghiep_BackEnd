@@ -20,7 +20,7 @@ const upload = multer({
   }),
 });
 
- router.use(passport.authenticate("jwt", { session: false }));
+ //router.use(passport.authenticate("jwt", { session: false }));
 router.route("/categories").get(ProductControler.getCategories);
 router.route("/").get(ProductControler.getProducts).post(ProductControler.addProduct);
 router.route("/new").get(ProductControler.getProductsNew);

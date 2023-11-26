@@ -65,6 +65,7 @@ app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use('/uploads', express.static('uploads'));
+app.use(express.json());
 
 
  
@@ -76,6 +77,7 @@ const order = require("./router/order");
 const evaluate = require("./router/evaluate");
 const categories = require("./router/categories");
 const notification = require("./router/notification");
+const static = require("./router/static");
 
 app.use("/notification", notification);
 app.use("/products", productRoutes);
@@ -84,6 +86,7 @@ app.use("/order", order);
 app.use("/evaluate", evaluate);
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
+app.use("/static",static)
  
 // 404 Not Found middleware
 app.use((req, res, next) => {
@@ -101,7 +104,7 @@ app.use((err, req, res, next) => {
  
 // Start server
 const port = 8000;
-server.listen(port, "192.168.1.181", () =>
+server.listen(port, "192.168.1.11", () =>
   console.log(`Server is listening on port ${port}`)
 );
 module.exports={admin}
