@@ -22,12 +22,14 @@ const upload = multer({
 
  router.use(passport.authenticate("jwt", { session: false }));
 router.route("/categories").get(ProductControler.getCategories);
-router.route("/").get(ProductControler.getProducts).post(ProductControler.addProduct);
+router.route("/").get(ProductControler.getProducts).post(ProductControler.addProduct).put(ProductControler.updateProduct);
 router.route("/new").get(ProductControler.getProductsNew);
 router.route("/sale").get(ProductControler.getProductsSale);
-router.route("/details/:idProduct").get(ProductControler.getDetailsProduct).post(ProductControler.addDetailsProduct);
+router.route("/details/:idProduct").get(ProductControler.getDetailsProduct).post(ProductControler.addDetailsProduct).put(ProductControler.updateProductDetails);
+router.route("/details").put(ProductControler.updateProductDetails);
 router.route("/image/:idProduct").get(ProductControler.getImageProduct).post(upload.single("image" ),ProductControler.addImageProduct);
-router.route("/productQuantity/:idProduct").post(ProductControler.addProductQuantity) ;
+router.route("/productQuantity/:idProduct").post(ProductControler.addProductQuantity).put(ProductControler.updateImageQuantity) ;
+router.route("/productQuantity"). put(ProductControler.updateImageQuantity) ;
 
 
 

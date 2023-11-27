@@ -9,27 +9,27 @@ const SendEmail = require("../services/sendEmail.js");
 dotenv.config();
 const GOOGLE_CLIENT_ID =
   "470422080037-a8nm0h5fs6tqo1p6p0chpv2co02jirvb.apps.googleusercontent.com";
-  const accountSid = "ACa6de830808fa1f3989a8140b87937031";
-  const authToken = "786074c113800832ad7cb7108f4b3595 ";
-  const verifySid = "VA999c76ae3c784af8d499962020be0754";
+const accountSid = "ACa6de830808fa1f3989a8140b87937031";
+const authToken = "786074c113800832ad7cb7108f4b3595 ";
+const verifySid = "VA999c76ae3c784af8d499962020be0754";
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 const twilio = require("twilio")(accountSid, authToken);
 
 const sendOtp = async (req, res, next) => {
   const { email, account, type } = req.body;
-  console.log("saaaaaaaaaaaaa"+account);
+  console.log("saaaaaaaaaaaaa" + account);
   if (type === "phone") {
-    sendOTPPhoneNumber(account,res);
+    sendOTPPhoneNumber(account, res);
   } else {
-    SendEmail.sendOtpEmail(email,res);
+    SendEmail.sendOtpEmail(email, res);
   }
 };
 const verificaionOtp = async (req, res, next) => {
   const { otp, email, account, type } = req.body;
   if (type === "phone") {
-    verifyOTPPhoneNumber(account, otp,res);
+    verifyOTPPhoneNumber(account, otp, res);
   } else {
-    SendEmail.verifyOTPEmail(account, otp,res);
+    SendEmail.verifyOTPEmail(account, otp, res);
   }
 };
 const updatePassword = async (req, res, next) => {
@@ -65,17 +65,17 @@ const authenticationGoogle = async (req, res, next) => {
   const { userId, userEmail, picture, name } = await verifyGoogleToken(idToken);
   var roleType = req.query.roleType;
 
-  if(roleType){
-    roleType='ADMIN'
-  }else{
-    roleType='USER'
+  if (roleType) {
+    roleType = "ADMIN";
+  } else {
+    roleType = "USER";
   }
-  const user = await User.findOne({ authGoogleId: userId,roleType:roleType });
- 
+  const user = await User.findOne({ authGoogleId: userId, roleType: roleType });
+
   if (user) {
     await TokenFcm.findOneAndUpdate(
-      { idUser:  user._id },
-      { idUser:  user._id, token: req.header("Fcm") },
+      { idUser: user._id },
+      { idUser: user._id, token: req.header("Fcm") },
       { upsert: true }
     );
     res.setHeader("Authorization", GenerateToken(user._id));
@@ -110,13 +110,16 @@ const signUpLocal = async (req, res, next) => {
   const { username, phoneNumber, password, address } = req.body;
   var roleType = req.query.roleType;
 
-  if(roleType){
-    roleType='ADMIN'
-  }else{
-    roleType='USER'
+  if (roleType) {
+    roleType = "ADMIN";
+  } else {
+    roleType = "USER";
   }
   try {
-    const existingUser = await User.findOne({ phoneNumber: phoneNumber,roleType:roleType });
+    const existingUser = await User.findOne({
+      phoneNumber: phoneNumber,
+      roleType: roleType,
+    });
 
     if (existingUser) {
       return res.status(400).json({ error: "Account already exists" });
@@ -128,9 +131,10 @@ const signUpLocal = async (req, res, next) => {
       address: address,
       phoneNumber: phoneNumber,
       password: password,
-      roleType:roleType,
-      avatar: "https://gocsuckhoe.com/wp-content/uploads/2020/09/avatar-facebook.jpg",
-     });
+      roleType: roleType,
+      avatar:
+        "https://gocsuckhoe.com/wp-content/uploads/2020/09/avatar-facebook.jpg",
+    });
 
     const userSave = await User.create(newUser);
 
@@ -148,44 +152,42 @@ const signUpLocal = async (req, res, next) => {
   }
 };
 
-
-
-
 const LoginUser = async (req, res) => {
   const email = req.body.account;
   const password = req.body.password;
   var roleType = req.query.roleType;
-  if(roleType){
-    roleType='ADMIN'
-  }else{
-    roleType='USER'
-  }
-try {
-  const user= await User.findOne( {$or:[{ email: email } , {phoneNumber: email  }],roleType:roleType}  ) 
-  //  console.log(data);
-  if (!user) {
-    res.status(400).json({ error: "Account không hợp lệ" });
+  if (roleType) {
+    roleType = "ADMIN";
   } else {
-    await TokenFcm.findOneAndUpdate(
-      { idUser:  user._id },
-      { idUser:  user._id , token: req.header("Fcm") },
-      { upsert: true }
-    );
+    roleType = "USER";
+  }
+  try {
+    const user = await User.findOne({
+      $or: [{ email: email }, { phoneNumber: email }],
+      roleType: roleType,
+    });
+    //  console.log(data);
+    if (!user) {
+      res.status(400).json({ error: "Account không hợp lệ" });
+    } else {
+      await TokenFcm.findOneAndUpdate(
+        { idUser: user._id },
+        { idUser: user._id, token: req.header("Fcm") },
+        { upsert: true }
+      );
       //  const validate =await user.isValidatePassword(password);
       // if (validate) {
-        const token = GenerateToken(user._id);
-        res.setHeader("Authorization", token);
-        console.log(user)
-        res.status(200).send(user);
+      const token = GenerateToken(user._id);
+      res.setHeader("Authorization", token);
+      console.log(user);
+      res.status(200).send(user);
       // } else {
       //   res.status(400).json({ error: "Account không hợp lệ" });
       // }
-  
-  } 
-} catch (error) {
-  console.log(error.message)
-}
-  
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 const verifyGoogleToken = async (idToken) => {
@@ -214,7 +216,7 @@ const verifyGoogleToken = async (idToken) => {
   }
 };
 
-const sendOTPPhoneNumber = async (phoneNumber,res) => {
+const sendOTPPhoneNumber = async (phoneNumber, res) => {
   try {
     twilio.verify.v2
       .services(verifySid)
@@ -233,7 +235,7 @@ const sendOTPPhoneNumber = async (phoneNumber,res) => {
   }
 };
 
-const verifyOTPPhoneNumber = async (phoneNumber, otp,res) => {
+const verifyOTPPhoneNumber = async (phoneNumber, otp, res) => {
   return res.status(200).json({ message: "OTP code has been sent" });
   try {
     const verificationCheck = await twilio.verify.v2
@@ -257,5 +259,6 @@ module.exports = {
   sendOtp,
   verifyOTPPhoneNumber,
   updatePassword,
-  verificaionOtp,LoginUser
+  verificaionOtp,
+  LoginUser,
 };

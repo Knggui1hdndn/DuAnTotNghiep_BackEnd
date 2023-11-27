@@ -22,6 +22,50 @@ const addProduct = async (req, res) => {
   }).save();
   res.status(201).send(newProduct);
 };
+const updateProduct = async (req, res) => {
+  const { name, price, sale, description, idCata, id } = req.body;
+  const updatedProduct = await Product.findByIdAndUpdate(
+    {
+      _id: id,
+    },
+    { name, price, sale, description, idCata },
+    { new: true }
+  );
+  if (updatedProduct) {
+    res.status(200).json({ message: "Update successful" });
+  } else {
+    res.status(404).json({ message: "Product not found" });
+  }
+};
+const updateProductDetails = async (req, res) => {
+  const { size, idProductDetail } = req.body;
+  const updateProductDetails = await ProductDetail.findByIdAndUpdate(
+    {
+      _id: idProductDetail,
+    },
+    { size },
+    { new: true }
+  );
+  if (updateProductDetails) {
+    res.status(200).json({ message: "Update successful" });
+  } else {
+    res.status(404).json({ message: "ProductDetails not found" });
+  }
+};
+const updateImageQuantity = async (req, res) => {
+  const { idImageQuantity, image, quantity } = req.body;
+  const updateImageQuantity = await ImageQuantity.findByIdAndUpdate(
+    {
+      _id: idImageQuantity,
+    },
+    { image, quantity },
+    { new: true }
+  );
+  if (updateImageQuantity) {
+    res.status(200).json({ message: "Update successful" });
+  } else {
+    res.status(404).json({ message: "ImageQuantity not found" });
+  }};
 
 const addDetailsProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
@@ -76,31 +120,34 @@ const addProductQuantity = async (req, res) => {
 const getProducts = async (req, res, next, sortField = null) => {
   try {
     const query = Product.find({})
-    .populate({
-      path: "idCata",
-      select: "category", // Chỉ lấy trường "name" từ bảng "category"
-    })
-    .populate({
-      path: "productDetails",
-      options: { limit: 1 },
-      populate: {
+      .populate({
+        path: "idCata",
+        select: "category", // Chỉ lấy trường "name" từ bảng "category"
+      })
+      .populate({
+        path: "productDetails",
         options: { limit: 1 },
-        path: "imageProductQuantity",
         populate: {
-          path: "imageProduct",
           options: { limit: 1 },
+          path: "imageProductQuantity",
+          populate: {
+            path: "imageProduct",
+            options: { limit: 1 },
+          },
         },
-      },
-    }) .lean();
- 
+      })
+      .lean();
+
     if (sortField) {
       query.sort({ [sortField]: -1 });
     }
 
     const products = await query;
-    const modifiedResult = products.map(product => {
+    const modifiedResult = products.map((product) => {
       const modifiedProduct = { ...product };
-      modifiedProduct.idCata = product.idCata.category;
+      try {
+        modifiedProduct.idCata = product.idCata.category;
+      } catch (error) {}
       return modifiedProduct;
     });
     res.json(modifiedResult);
@@ -256,4 +303,7 @@ module.exports = {
   addImageProduct,
   getImageProduct,
   addProductQuantity,
+  updateImageQuantity,
+  updateProductDetails,
+  updateProduct,
 };
