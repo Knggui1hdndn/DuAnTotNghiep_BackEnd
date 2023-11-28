@@ -18,7 +18,7 @@ const updateProfile = async (req, res, next) => {
     const email = req.body.email;
     const userNew = await User.findOneAndUpdate(
       { _id: req.user._id },
-      { name, address, phoneNumber, email, avatar: filePath },
+      { name, address, phoneNumber, email, avatar:filePath },
       { new: true }
     );
     res.status(201).send(userNew);
@@ -36,7 +36,7 @@ const searchProduct = async (req, res, next) => {
         path: "productDetails",
         options: { limit: 1 },
 
-        populate: {
+         populate: {
           options: { limit: 1 },
           path: "imageProductQuantity",
           populate: {
@@ -46,8 +46,8 @@ const searchProduct = async (req, res, next) => {
         },
       })
       .limit(10)
-      .skip(skip);
-    console.error(data);
+      .skip(skip)
+      console.error(data);
 
     res.json(data);
   } catch (error) {
@@ -56,8 +56,19 @@ const searchProduct = async (req, res, next) => {
   }
 };
 
-const NotificationControler = require("./Notification");
-const TokenFcm = require("../model/tokenFcm");
+//danh sách người dùng
+const getUser = async (req, res, next) => {
+  try{
+    const users = await User.find({roleType: "USER"});
+    users.unshift({ _id: "", user: "All" });
+    res.status(200).json(users);
+  }catch(error){
+    console.log(error);
+    res.status(500).json({ error: "Server error" });
+  }
+  
+};
+
 
 const generateQrPay = async (req, res, next) => {
   const { idOrder } = req.query;
@@ -66,33 +77,20 @@ const generateQrPay = async (req, res, next) => {
   const paymentType = payments.TRANSFER;
   try {
     // Find and update the order
-    const order = await Order.findOneAndUpdate(
-      { _id: idOrder },
-      { status: status.WAIT_FOR_CONFIRMATION },
-      { new: true }
-    );
+    const order = await Order.findOne({
+      _id: idOrder,
+    });
 
     if (!order) {
       return res
         .status(404)
         .json({ error: "An error occurred. Please try again" });
     }
-    var payQr = await PayQR.findOne({
-      idOrder: order._id,
+    const payQr = await PayQR.findOne({
+      idOrder:order._id,
       idUser: idUser,
     });
-    if (payQr != null) {
-      if (payQr.expiration < Date.now()) {
-        const currentTime = Date.now();
-        const expirationTime = currentTime + 30 * 60 * 1000; // 30 minutes in milliseconds
-        payQr = await PayQR.findOneAndUpdate(
-          { _id: payQr._id },
-          { timeCreateAt: currentTime, expiration: expirationTime },
-          { new: true, upsert: true }
-        );
-      await  scheduleOrderExp(payQr, idOrder);
-      }
-    }
+    console.log("ook nhe" + payQr);
     if (payQr == null) {
       const newPayQR = new PayQR({
         idOrder: order._id,
@@ -104,39 +102,23 @@ const generateQrPay = async (req, res, next) => {
       newPayQR.url = qrDataURL;
 
       const savedPayQR = await newPayQR.save();
-      await  scheduleOrderExp(savedPayQR, idOrder);
+
+      // Schedule job to remove PayQR
+      // const job = schedule.scheduleJob(savedPayQR.expiration, async () => {
+      //   const existingQR = await PayQR.findOneAndRemove({
+      //     _id: savedPayQR._id,
+      //   });
+      //   console.log("ook nhe" + existingQR);
+      // });
       return res.status(200).json(savedPayQR);
     }
     payQr.timeCurrent = Date.now();
-    console.log("ook nhe" + payQr);
-
+console.log(payQr.timeCurrent)
     return res.status(200).json(payQr);
   } catch (error) {
     console.log(error);
     return res.status(400).json({ error: "Server error" });
   }
 };
-async function scheduleOrderExp(payQr, idOrder) {
-  const job = schedule.scheduleJob(payQr.expiration, async () => {
-    const existingQR = await Order.findByIdAndUpdate(
-      {
-        _id: idOrder,
-      },
-      { status: status.CANCEL },
-      { new: true }
-    );
 
-    const findTokenFcm = await TokenFcm.findOne({ idUser: existingQR.idUser });
-
-    NotificationControler.sendNotification(
-      findTokenFcm.token,
-      {
-        url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
-        title: "Payment",
-        body: "Your order was canceled due to unpaid payment",
-      },
-      findTokenFcm.idUser
-    );
-  });
-}
-module.exports = { generateQrPay, searchProduct, updateProfile };
+module.exports = { generateQrPay, searchProduct, updateProfile, getUser};
