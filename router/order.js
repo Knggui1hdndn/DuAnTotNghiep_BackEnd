@@ -2,11 +2,11 @@ const express = require("express");
 const router = express.Router();
 const OrderControler = require("../controler/OrderControler");
 
-
-router.route("/purchase").put(OrderControler.updatePayment)
 const passport = require("passport");
 const passportConfig = require("../middelwares/passport.js");
- router.use(passport.authenticate("jwt", { session: false }));
+router.route("/purchase") .put(OrderControler.updatePayment)
+
+router.use(passport.authenticate("jwt", { session: false }));
 router
   .route("/detail-order")
   .get(OrderControler.getDetailsOrders)
@@ -20,8 +20,7 @@ router
   .get(OrderControler.getCountNotiAndOrderDetails);
 
   router.route("/").get(OrderControler.getOrderByStatus)
- router.route("/purchase").post(OrderControler.purchase)
-  router
-  .route("/checkBuyNow")
-  .post(OrderControler.checkBuyNow) 
+  router.route("/purchase").post(OrderControler.purchase) 
+
+  router.route("/listOrder").get(OrderControler.getOrder);
  module.exports = router;
