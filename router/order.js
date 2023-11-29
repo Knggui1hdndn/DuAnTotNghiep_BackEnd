@@ -18,7 +18,9 @@ router.route("/detail-order/selectAll").put( OrderControler.selectedAll);
 router
   .route("/count/orderDetails-notification")
   .get(OrderControler.getCountNotiAndOrderDetails);
-
+  router
+  .route("/checkBuyNow")
+  .post(OrderControler.checkBuyNow) 
   router.route("/").get(OrderControler.getOrderByStatus)
   router.route("/purchase").post(OrderControler.purchase) 
 
