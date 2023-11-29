@@ -59,8 +59,7 @@ const searchProduct = async (req, res, next) => {
 //danh sách người dùng
 const getUser = async (req, res, next) => {
   try{
-    const users = await User.find({roleType: "USER"});
-    users.unshift({ _id: "", user: "All" });
+   const users = await User.find({ roleType: "USER"})
     res.status(200).json(users);
   }catch(error){
     console.log(error);
