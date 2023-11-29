@@ -126,8 +126,7 @@ const getProducts = async (req, res, next, sortField = null) => {
         path: "idCata",
         select: "category", // Chỉ lấy trường "name" từ bảng "category"
       })
-      .limit(limit)
-      .skip(req.query.skip)
+
       .populate({
         path: "productDetails",
         options: { limit: 1 },
@@ -140,6 +139,8 @@ const getProducts = async (req, res, next, sortField = null) => {
           },
         },
       })
+      .limit(limit)
+      .skip(req.query.skip)
       .lean();
 
     if (sortField) {
@@ -228,20 +229,25 @@ const getAllFavourites = async (req, res, next) => {
 };
 
 const getProductByIdCate = async (req, res, next) => {
+  const skip = req.query.skip == null ? req.query.skip : 0;
+
   const idCategory = req.params.idCategory; // Assuming the category ID is in the route parameter
   try {
-    const products = await Product.find({ idCata: idCategory }).populate({
-      path: "productDetails",
-      options: { limit: 1 },
-      populate: {
+    const products = await Product.find({ idCata: idCategory })
+      .populate({
+        path: "productDetails",
         options: { limit: 1 },
-        path: "imageProductQuantity",
         populate: {
-          path: "imageProduct",
           options: { limit: 1 },
+          path: "imageProductQuantity",
+          populate: {
+            path: "imageProduct",
+            options: { limit: 1 },
+          },
         },
-      },
-    });
+      })
+      .skip(skip)
+      .limit(3);
     res.json(products);
   } catch (error) {
     // Handle any errors that occur during the query
@@ -264,7 +270,8 @@ const getDetailsProduct = async (req, res, next) => {
             path: "imageProduct",
           },
         },
-      }).lean();
+      })
+      .lean();
     const modifiedProduct = { ...product };
 
     modifiedProduct.idCata = product.idCata.category;
@@ -280,7 +287,7 @@ const getDetailsProduct = async (req, res, next) => {
     });
 
     const productWithFavourite = {
-      ...modifiedProduct ,
+      ...modifiedProduct,
       isFavourite: !!favourite,
       detailOrder: detailOrder || null,
     };

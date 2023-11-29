@@ -29,13 +29,15 @@ const updateProfile = async (req, res, next) => {
 
 const searchProduct = async (req, res, next) => {
   try {
-    const { name, skip } = req.query;
+    const { name } = req.query;
+    const skip = req.query.skip != null ? req.query.skip : 0;
 
     const data = await Product.find({ name: { $regex: name, $options: "i" } })
+    .limit(10)
+    .skip(skip)
       .populate({
         path: "productDetails",
         options: { limit: 1 },
-
          populate: {
           options: { limit: 1 },
           path: "imageProductQuantity",
@@ -45,10 +47,8 @@ const searchProduct = async (req, res, next) => {
           },
         },
       })
-      .limit(10)
-      .skip(skip)
+ 
       console.error(data);
-
     res.json(data);
   } catch (error) {
     console.error("Lỗi khi truy vấn dữ liệu:", error);

@@ -66,14 +66,19 @@ const addEvaluates = async (req, res) => {
 
 const getEvaluates = async (req, res) => {
   const idProduct = req.params.idProduct;
+  const skip = req.query.skip != null ? req.query.skip : 0;
   try {
     const lissEvaluate = await Evaluate.find({
-      idProduct: new mongoose.Types.ObjectId(idProduct),
+      idProduct:  idProduct ,
     })
       .populate("idUser")
-      .populate("feelings");
+      .populate("feelings")
+      .limit(5)
+      .skip(skip)
+      ;
+      console.log(lissEvaluate.length+"   "+skip)
+
     if (lissEvaluate) {
-      console.log(lissEvaluate);
       return res.status(200).send(lissEvaluate);
     }
     return res.status(404).json({ error: "Object not found" });

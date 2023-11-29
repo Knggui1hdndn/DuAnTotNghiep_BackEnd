@@ -38,7 +38,7 @@ router.route("/:idCategory").get(ProductControler.getProductByIdCate);
 router
   .route("/favourite/:idProduct")
   .post(ProductControler.addFavourite)
-  .delete(ProductControler.deleteFavourite) 
+  .delete(ProductControler.deleteFavourite)
   .get(ProductControler.getAllFavourites);
 
 

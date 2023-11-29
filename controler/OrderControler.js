@@ -18,7 +18,7 @@ const updatePayment = async (req, res, next) => {
         { isPay: true },
         { new: true }
       );
-      
+
       res.json({ success: true, order });
     } else {
       res.status(404).json({
@@ -33,14 +33,18 @@ const updatePayment = async (req, res, next) => {
 };
 const getOrderByStatus = async (req, res) => {
   try {
+    const skip = req.query.skip != null ? req.query.skip : 0;
     const status = req.query.status;
-    const order = await Order.find({ status: status, idUser: req.user._id });
+    const order = await Order.find({ status: status, idUser: req.user._id })
+      .skip(skip)
+      .limit(5);
     console.log(order);
     res.status(200).json(order);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
+
 const purchase = async (req, res) => {
   try {
     const { address, name, phoneNumber } = req.body;
@@ -118,11 +122,11 @@ const selectedAll = async (req, res) => {
 
 // danh sách đơn hàng
 const getOrder = async (req, res, next) => {
-  try{
+  try {
     const orders = await Order.find();
     orders.unshift({ _id: "", orders: "All" });
     res.status(200).json(orders);
-  }catch(error){
+  } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Server error" });
   }
@@ -208,6 +212,38 @@ const getCountDetailsOrder = async (req) => {
 };
 
 const getDetailsOrders = async (req, res) => {
+  var idOrder = req.query.idOrder;
+
+  if (idOrder != null) {
+    const order = await Order.findById(idOrder);
+    const orderDetails = await DetailOrder.find({
+      idOrder: idOrder,
+    }).populate({
+      path: "idProduct",
+      select: "name -_id",
+    })
+      .select(
+        "-idProduct -idOrder -_id  "
+      )
+      .populate({
+        path: "idImageProductQuantity",
+        select:"-_id -idProductDetail",
+        populate: {
+          path: "imageProduct",
+          select:"-_id -idProduct ",
+        },
+      });
+
+    const rs = {
+      ...order.toObject(),
+      detailsOrder: orderDetails,
+    };
+    return res.send(rs);
+  } else {
+    getUnpaidInvoiceDetails(req, res);
+  }
+};
+const getUnpaidInvoiceDetails = async (req, res) => {
   try {
     const order = await Order.findOne({
       idUser: req.user._id,
@@ -216,44 +252,39 @@ const getDetailsOrders = async (req, res) => {
     });
 
     if (order) {
-      // Then, if an unpaid order exists, find its details using idOrder
-      const orderDetails = await DetailOrder.find({
-        idOrder: order._id,
-      })
-        .populate({
-          path: "idProduct",
-          select: "name", // Chọn các trường cần lấy
-        })
-        .populate({
-          path: "idImageProductQuantity",
-          populate: {
-            path: "imageProduct",
-          },
-        });
-
+      await getDetailsOrderById(order._id);
       if (orderDetails) {
-        // Check if there are any order details, and respond with them if found
-        console.log(orderDetails);
         res.status(200).json(orderDetails);
       } else {
-        // Handle the case when there are no order details
         res
           .status(404)
           .json({ error: "No order details found for this order." });
       }
     } else {
-      // Handle the case when no unpaid orders with the specified payment method are found
       res.status(404).json({
         error: "No unpaid orders with the specified payment method found.",
       });
     }
   } catch (error) {
-    // Handle any errors that occur during the process
-    console.log(error.message);
     res.status(500).json({ error: error.message });
   }
 };
-
+const getDetailsOrderById = async (idOrder) => {
+  const orderDetails = await DetailOrder.find({
+    idOrder: idOrder,
+  })
+    .populate({
+      path: "idProduct",
+      select: "name",
+    })
+    .populate({
+      path: "idImageProductQuantity",
+      populate: {
+        path: "imageProduct",
+      },
+    });
+  return orderDetails;
+};
 const processDetailsOrder = async (req, res) => {
   const {
     size,
@@ -404,9 +435,9 @@ const updateCartItem = async (
   intoMoney,
   price
 ) => {
-  orderDetails.quantity = orderDetails.quantity+quantity;
+  orderDetails.quantity = orderDetails.quantity + quantity;
   orderDetails.sale = sale;
-  orderDetails.intoMoney = orderDetails.intoMoney+intoMoney;
+  orderDetails.intoMoney = orderDetails.intoMoney + intoMoney;
   orderDetails.price = price;
   await orderDetails.save();
 };
