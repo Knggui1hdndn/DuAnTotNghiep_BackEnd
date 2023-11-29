@@ -83,6 +83,7 @@ const purchase = async (req, res) => {
       await newOrders.save();
 
       const newDetailOrder = new DetailOrder(req.body.detailOrderRequest );
+      newDetailOrder.idOrder=newOrders._id
       await newDetailOrder.save();
       if (!newDetailOrder) {
         throw new Error("Sever error");
