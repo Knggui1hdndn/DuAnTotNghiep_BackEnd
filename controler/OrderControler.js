@@ -120,7 +120,17 @@ const selectedAll = async (req, res) => {
 const getOrder = async (req, res, next) => {
   try{
     const orders = await Order.find();
-    orders.unshift({ _id: "", orders: "All" });
+    res.status(200).json(orders);
+  }catch(error){
+    console.log(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+//danh sách chi tiết đơn hàng
+const getDetailOrder = async (req, res, next) => {
+  try{
+    const orders = await DetailOrder.find();
     res.status(200).json(orders);
   }catch(error){
     console.log(error);
@@ -426,4 +436,5 @@ module.exports = {
   purchase,
   updatePayment,
   getOrder,
+  getDetailOrder,
 };

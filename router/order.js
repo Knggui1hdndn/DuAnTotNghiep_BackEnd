@@ -23,4 +23,5 @@ router
   router.route("/purchase").post(OrderControler.purchase) 
 
   router.route("/listOrder").get(OrderControler.getOrder);
+  router.route("/listDetailOrder").get(OrderControler.getDetailOrder);
  module.exports = router;
