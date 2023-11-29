@@ -6,6 +6,7 @@ const GenerateOtp = require("../services/generateOtp");
 const schedule = require("node-schedule"); // Thêm "schedule"
 const { error } = require("console");
 const { Order, DetailOrder, payments, status } = require("../model/order");
+const { Query } = require("mongoose");
 const updateProfile = async (req, res, next) => {
   try {
     const host = req.hostname;
@@ -59,8 +60,7 @@ const searchProduct = async (req, res, next) => {
 //danh sách người dùng
 const getUser = async (req, res, next) => {
   try{
-    const users = await User.find({roleType: "USER"});
-    users.unshift({ _id: "", user: "All" });
+    const users = await User.find({ roleType: "USER"}).select("-authType").select("-authGoogleId"); 
     res.status(200).json(users);
   }catch(error){
     console.log(error);
