@@ -216,23 +216,34 @@ const getDetailsOrders = async (req, res) => {
 
   if (idOrder != null) {
     const order = await Order.findById(idOrder);
-    const orderDetails = await DetailOrder.find({
+    var orderDetails = await DetailOrder.find({
       idOrder: idOrder,
-    }).populate({
-      path: "idProduct",
-      select: "name -_id",
     })
-      .select(
-        "-idProduct -idOrder -_id  "
-      )
+      .populate({
+        path: "idProduct",
+        select: "name -_id",
+      })
+      .select("-idProduct -idOrder -_id  ")
       .populate({
         path: "idImageProductQuantity",
-        select:"-_id -idProductDetail",
+        select: "-_id -idProductDetail",
         populate: {
           path: "imageProduct",
-          select:"-_id -idProduct ",
+          select: "-_id -idProduct ",
         },
-      });
+      })
+      .lean();
+
+    orderDetails = orderDetails.map((detail) => {
+      const { idProduct, idImageProductQuantity, ...rest } = detail;  
+      return {
+        ...rest,
+        name: idProduct.name,
+        color: idImageProductQuantity.imageProduct.color,
+        image: idImageProductQuantity.imageProduct.image,
+        quantity: idImageProductQuantity.quantity,
+      };
+    });
 
     const rs = {
       ...order.toObject(),
