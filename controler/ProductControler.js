@@ -65,7 +65,8 @@ const updateImageQuantity = async (req, res) => {
     res.status(200).json({ message: "Update successful" });
   } else {
     res.status(404).json({ message: "ImageQuantity not found" });
-  }};
+  }
+};
 
 const addDetailsProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
@@ -119,11 +120,14 @@ const addProductQuantity = async (req, res) => {
 
 const getProducts = async (req, res, next, sortField = null) => {
   try {
+    const limit = 5;
     const query = Product.find({})
       .populate({
         path: "idCata",
         select: "category", // Chỉ lấy trường "name" từ bảng "category"
       })
+      .limit(limit)
+      .skip(req.query.skip)
       .populate({
         path: "productDetails",
         options: { limit: 1 },
@@ -247,15 +251,23 @@ const getProductByIdCate = async (req, res, next) => {
 const getDetailsProduct = async (req, res, next) => {
   try {
     const idProduct = req.params.idProduct; // Assuming the product ID is in the route parameter
-    const product = await Product.findById({ _id: idProduct }).populate({
-      path: "productDetails",
-      populate: {
-        path: "imageProductQuantity",
+    var product = await Product.findById({ _id: idProduct })
+      .populate({
+        path: "idCata",
+        select: "category", // Chỉ lấy trường "name" từ bảng "category"
+      })
+      .populate({
+        path: "productDetails",
         populate: {
-          path: "imageProduct",
+          path: "imageProductQuantity",
+          populate: {
+            path: "imageProduct",
+          },
         },
-      },
-    });
+      }).lean();
+    const modifiedProduct = { ...product };
+
+    modifiedProduct.idCata = product.idCata.category;
 
     const favourite = await Favourite.findOne({
       idProduct: idProduct,
@@ -268,10 +280,11 @@ const getDetailsProduct = async (req, res, next) => {
     });
 
     const productWithFavourite = {
-      ...product.toObject(),
+      ...modifiedProduct ,
       isFavourite: !!favourite,
       detailOrder: detailOrder || null,
     };
+
     res.status(200).json(productWithFavourite);
   } catch (error) {
     res.status(400).json({ error: error.message });
