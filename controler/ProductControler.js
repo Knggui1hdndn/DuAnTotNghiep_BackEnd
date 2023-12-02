@@ -75,6 +75,7 @@ const addDetailsProduct = async (req, res) => {
     idProduct,
     size,
   }).save();
+  await Product.findByIdAndUpdate({_id:idProduct},{ $push: { 'productDetails': newProductDetail._id } })
   res.status(201).send(newProductDetail);
 };
 
@@ -121,7 +122,7 @@ const addProductQuantity = async (req, res) => {
 const getProducts = async (req, res, next, sortField = null) => {
   try {
     const limit = 5;
-    const query = Product.find({})
+    const query = Product.find({ })
       .populate({
         path: "idCata",
         select: "category", // Chỉ lấy trường "name" từ bảng "category"
@@ -142,12 +143,13 @@ const getProducts = async (req, res, next, sortField = null) => {
       .limit(limit)
       .skip(req.query.skip)
       .lean();
-
     if (sortField) {
       query.sort({ [sortField]: -1 });
     }
 
     const products = await query;
+    console.log(products)
+
     const modifiedResult = products.map((product) => {
       const modifiedProduct = { ...product };
       try {
@@ -155,7 +157,7 @@ const getProducts = async (req, res, next, sortField = null) => {
       } catch (error) {}
       return modifiedProduct;
     });
-    res.json(modifiedResult);
+    res.json(products);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Server error" });
