@@ -29,6 +29,7 @@ const { Product, ProductDetail, ImageProduct,ImageQuantity }= require('./model/p
  
 const corsOpts = {
   origin: '*',
+  exposedHeaders: ['Authorization'],
 
   methods: [
     'GET',
