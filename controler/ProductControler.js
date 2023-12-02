@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const {
   Product,
   ProductDetail,
@@ -67,17 +66,37 @@ const updateImageQuantity = async (req, res) => {
     res.status(404).json({ message: "ImageQuantity not found" });
   }
 };
+const mongoose = require("mongoose");
 
 const addDetailsProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
   const { size } = req.body;
-  const newProductDetail = await new ProductDetail({
-    idProduct,
-    size,
-  }).save();
-  await Product.findByIdAndUpdate({_id:idProduct},{ $push: { 'productDetails': newProductDetail._id } })
-  res.status(201).send(newProductDetail);
+
+  // Tạo một ObjectId từ chuỗi idProduct
+  const idProductObjectId = new mongoose.Types.ObjectId(idProduct);
+
+  try {
+    // Tạo một ProductDetail mới với idProductObjectId và size
+    const newProductDetail = await new ProductDetail({
+      idProduct: idProductObjectId,
+      size,
+    }).save();
+
+    // Cập nhật mảng productDetails của Product
+    await Product.findByIdAndUpdate(
+      { _id: idProduct },
+      { $push: { productDetails: newProductDetail._id } }
+    );
+
+    res.status(201).send(newProductDetail);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 };
+
+module.exports = addDetailsProduct;
+
 
 const addImageProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
