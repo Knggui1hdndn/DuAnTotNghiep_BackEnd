@@ -157,7 +157,7 @@ const getProducts = async (req, res, next, sortField = null) => {
       } catch (error) {}
       return modifiedProduct;
     });
-    res.json(products);
+    res.json(modifiedResult);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Server error" });

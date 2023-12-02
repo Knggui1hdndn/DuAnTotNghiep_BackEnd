@@ -107,7 +107,7 @@ app.use((err, req, res, next) => {
  
 // Start server
 const port = 8000;
-server.listen(port, "192.168.1.12", () =>
+server.listen(port, "192.168.0.109", () =>
   console.log(`Server is listening on port ${port}`)
 );
 module.exports={admin}
