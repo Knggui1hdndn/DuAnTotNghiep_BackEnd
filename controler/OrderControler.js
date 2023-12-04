@@ -529,23 +529,25 @@ const moment = require("moment");
 
 const getOrderAndSearch = async (req, res) => {
   try {
-    let { startDate, endDate, status, orderCode, name, phoneNumber,isPay, isGetAll } =
-      req.query;
-
-    if ((!startDate || !endDate) && !orderCode && !name && !phoneNumber&&!isPay) {
-      startDate = moment().startOf("day").format("YYYY-MM-DD");
-      endDate = moment().endOf("day").format("YYYY-MM-DD");
-    }
-
+    let {
+      startDate,
+      endDate,
+      status,
+      orderCode,
+       phoneNumber,
+      isPay,
+      isGetAll,
+    } = req.query;
+ 
     const searchConditions = {};
 
-    if ((startDate && endDate)|| ((!startDate || !endDate) && !orderCode&& !status&& !isPay && !name && !phoneNumber)) {
+    if (startDate && endDate) {
       searchConditions.createAt = {
         $gte: moment(startDate).startOf("day"),
         $lte: moment(endDate).endOf("day"),
       };
     }
-    
+
     if (status) {
       searchConditions.status = status;
     }
@@ -555,18 +557,20 @@ const getOrderAndSearch = async (req, res) => {
     if (orderCode) {
       searchConditions._id = orderCode;
     }
-
-    if (name) {
-      searchConditions.name = { $regex: new RegExp(name, "i") };
-    }
+ 
 
     if (phoneNumber) {
       searchConditions.phoneNumber = { $regex: new RegExp(phoneNumber, "i") };
     }
 
-    const result = await Order.find(searchConditions);
-    console.log(searchConditions);
-    res.json(result);
+    const result = await Order.find(searchConditions).sort({ createAt: -1 });
+
+     const formattedResult = result.map(item => ({
+      ...item.toObject(),
+      createAt: moment(item.createAt).startOf('day').format('YYYY-MM-DD HH:mm:ss'),
+    }));
+
+    res.json(formattedResult);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ error: "Internal Server Error" });
