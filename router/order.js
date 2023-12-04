@@ -4,7 +4,7 @@ const OrderControler = require("../controler/OrderControler");
 
 const passport = require("passport");
 const passportConfig = require("../middelwares/passport.js");
-router.route("/purchase") .put(OrderControler.updatePayment)
+router.route("/purchase").put(OrderControler.updatePayment);
 
 router.use(passport.authenticate("jwt", { session: false }));
 router
@@ -13,16 +13,14 @@ router
   .post(OrderControler.processDetailsOrder)
   .put(OrderControler.updateDetailOrders)
   .delete(OrderControler.deleteOrderDetails);
-router.route("/detail-order/selectAll").put( OrderControler.selectedAll);
+router.route("/detail-order/selectAll").put(OrderControler.selectedAll);
 
 router
   .route("/count/orderDetails-notification")
   .get(OrderControler.getCountNotiAndOrderDetails);
-  router
-  .route("/checkBuyNow")
-  .post(OrderControler.checkBuyNow) 
-  router.route("/").get(OrderControler.getOrderByStatus)
-  router.route("/purchase").post(OrderControler.purchase) 
-
-  router.route("/listOrder").get(OrderControler.getOrder);
- module.exports = router;
+router.route("/checkBuyNow").post(OrderControler.checkBuyNow);
+router.route("/").get(OrderControler.getOrderByStatus);
+router.route("/search").get(OrderControler.getOrderAndSearch);
+router.route("/purchase").post(OrderControler.purchase);
+router.route("/listOrder").get(OrderControler.getOrder);
+module.exports = router;

@@ -18,12 +18,16 @@ const updatePayment = async (req, res, next) => {
         { isPay: true },
         { new: true }
       );
-      const findTokenFcm = await TokenFcm.findOne({idUser:order.idUser} );
-      NotificationControler.sendNotification(findTokenFcm.token,{
-        "url":"https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
-        "title":"Payment",
-        "body":"Your order has been payment confirmed"
-      },findTokenFcm.idUser)
+      const findTokenFcm = await TokenFcm.findOne({ idUser: order.idUser });
+      NotificationControler.sendNotification(
+        findTokenFcm.token,
+        {
+          url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
+          title: "Payment",
+          body: "Your order has been payment confirmed",
+        },
+        findTokenFcm.idUser
+      );
       res.json({ success: true, order });
     } else {
       res.status(404).json({
@@ -82,8 +86,8 @@ const purchase = async (req, res) => {
       });
       await newOrders.save();
 
-      const newDetailOrder = new DetailOrder(req.body.detailOrderRequest );
-      newDetailOrder.idOrder=newOrders._id
+      const newDetailOrder = new DetailOrder(req.body.detailOrderRequest);
+      newDetailOrder.idOrder = newOrders._id;
       await newDetailOrder.save();
       if (!newDetailOrder) {
         throw new Error("Sever error");
@@ -274,7 +278,7 @@ const getDetailsOrders = async (req, res) => {
       .lean();
 
     orderDetails = orderDetails.map((detail) => {
-      const { idProduct, idImageProductQuantity, ...rest } = detail;  
+      const { idProduct, idImageProductQuantity, ...rest } = detail;
       return {
         ...rest,
         name: idProduct.name,
@@ -498,7 +502,7 @@ const removeCartItem = async (orderDetails) => {
 const checkBuyNow = async (req, res, next) => {
   try {
     const { idQuantity, quantity } = req.query;
-  
+
     const imageQuantity = await ImageQuantity.findOne({ _id: idQuantity });
 
     if (imageQuantity) {
@@ -521,7 +525,53 @@ const checkBuyNow = async (req, res, next) => {
     return res.status(500).json({ success: false, error: "Server error" });
   }
 };
+const moment = require("moment");
+
+const getOrderAndSearch = async (req, res) => {
+  try {
+    let { startDate, endDate, status, orderCode, name, phoneNumber, isGetAll } =
+      req.query;
+
+    if ((!startDate || !endDate) && !orderCode && !name && !phoneNumber) {
+      startDate = moment().startOf("day").format("YYYY-MM-DD");
+      endDate = moment().endOf("day").format("YYYY-MM-DD");
+    }
+
+    const searchConditions = {};
+
+    if (startDate && endDate) {
+      searchConditions.createAt = {
+        $gte: moment(startDate).startOf("day"),
+        $lte: moment(endDate).endOf("day"),
+      };
+    }
+
+    if (status) {
+      searchConditions.status = status;
+    }
+
+    if (orderCode) {
+      searchConditions._id = orderCode;
+    }
+
+    if (name) {
+      searchConditions.name = { $regex: new RegExp(name, "i") };
+    }
+
+    if (phoneNumber) {
+      searchConditions.phoneNumber = { $regex: new RegExp(phoneNumber, "i") };
+    }
+
+    const result = await Order.find(searchConditions);
+    console.log(searchConditions);
+    res.json(result);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 module.exports = {
+  getOrderAndSearch,
   checkBuyNow,
   processDetailsOrder,
   getCountNotiAndOrderDetails,
