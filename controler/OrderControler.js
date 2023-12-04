@@ -529,27 +529,29 @@ const moment = require("moment");
 
 const getOrderAndSearch = async (req, res) => {
   try {
-    let { startDate, endDate, status, orderCode, name, phoneNumber, isGetAll } =
+    let { startDate, endDate, status, orderCode, name, phoneNumber,isPay, isGetAll } =
       req.query;
 
-    if ((!startDate || !endDate) && !orderCode && !name && !phoneNumber) {
+    if ((!startDate || !endDate) && !orderCode && !name && !phoneNumber&&!isPay) {
       startDate = moment().startOf("day").format("YYYY-MM-DD");
       endDate = moment().endOf("day").format("YYYY-MM-DD");
     }
 
     const searchConditions = {};
 
-    if (startDate && endDate) {
+    if ((startDate && endDate)|| ((!startDate || !endDate) && !orderCode&& !status&& !isPay && !name && !phoneNumber)) {
       searchConditions.createAt = {
         $gte: moment(startDate).startOf("day"),
         $lte: moment(endDate).endOf("day"),
       };
     }
-
+    
     if (status) {
       searchConditions.status = status;
     }
-
+    if (isPay) {
+      searchConditions.isPay = isPay;
+    }
     if (orderCode) {
       searchConditions._id = orderCode;
     }
