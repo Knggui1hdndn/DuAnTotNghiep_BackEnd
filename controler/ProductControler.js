@@ -97,7 +97,6 @@ const addDetailsProduct = async (req, res) => {
 
 module.exports = addDetailsProduct;
 
-
 const addImageProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
   const { color } = req.body;
@@ -141,33 +140,30 @@ const addProductQuantity = async (req, res) => {
 const getProducts = async (req, res, next, sortField = null) => {
   try {
     const limit = 5;
-    const query = Product.find({ })
+    const query = Product.find()
       .populate({
         path: "idCata",
         select: "category", // Chỉ lấy trường "name" từ bảng "category"
       })
-
       .populate({
         path: "productDetails",
-        options: { limit: 1 },
         populate: {
-          options: { limit: 1 },
           path: "imageProductQuantity",
           populate: {
             path: "imageProduct",
-            options: { limit: 1 },
           },
         },
       })
-      .limit(limit)
+
       .skip(req.query.skip)
+      .limit(5)
       .lean();
     if (sortField) {
       query.sort({ [sortField]: -1 });
     }
 
     const products = await query;
-    console.log(products)
+    console.log(products);
 
     const modifiedResult = products.map((product) => {
       const modifiedProduct = { ...product };
@@ -256,25 +252,63 @@ const getProductByIdCate = async (req, res, next) => {
   try {
     const products = await Product.find({ idCata: idCategory })
       .populate({
+        path: "idCata",
+        select: "category", 
+      })
+      .populate({
         path: "productDetails",
-        options: { limit: 1 },
         populate: {
-          options: { limit: 1 },
           path: "imageProductQuantity",
           populate: {
             path: "imageProduct",
-            options: { limit: 1 },
           },
         },
       })
       .skip(skip)
-      .limit(3);
+      .limit(5)
+      .lean()
     res.json(products);
   } catch (error) {
     // Handle any errors that occur during the query
     res.status(500).json({ error: "Server error" });
   }
 };
+ const calculateTotalProduct = async (req, res, next) => {
+  try {
+      
+    const product = await Product.findOne({ _id: req.params.idProduct });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const totalQuantity = await ImageQuantity.aggregate([
+      {
+        $match: {
+          idProductDetail: {
+            $in: product.productDetails,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: "$quantity" },
+        },
+      },
+    ]);
+
+    if (totalQuantity.length > 0) {
+      res.json(totalQuantity[0].totalQuantity);
+    } else {
+      res.json(0);
+    }
+  } catch (error) {
+    console.error("Error calculating total product quantity by idProduct:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 const getDetailsProduct = async (req, res, next) => {
   try {
     const idProduct = req.params.idProduct; // Assuming the product ID is in the route parameter
@@ -347,4 +381,5 @@ module.exports = {
   updateImageQuantity,
   updateProductDetails,
   updateProduct,
+  calculateTotalProduct
 };

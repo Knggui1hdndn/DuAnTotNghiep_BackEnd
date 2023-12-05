@@ -527,7 +527,7 @@ const checkBuyNow = async (req, res, next) => {
 };
 const moment = require("moment");
 
-const getOrderAndSearch = async (req, res) => {
+ const getOrderAndSearch = async (req, res) => {
   try {
     let {
       startDate,
@@ -577,6 +577,23 @@ const getOrderAndSearch = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const updateStatusOrder = async (req, res,next) => {
+  try {
+    const { status, idOrder } = req.query;
+ 
+    const order = await Order.findByIdAndUpdate(idOrder, { status }, { new: true });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(201).json(order);
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   getOrderAndSearch,
   checkBuyNow,
@@ -588,6 +605,6 @@ module.exports = {
   updateDetailOrders,
   getOrderByStatus,
   purchase,
-  updatePayment,
-  getOrder,
+  updatePayment,updateStatusOrder,
+  getOrder, 
 };
