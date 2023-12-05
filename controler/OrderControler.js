@@ -534,11 +534,11 @@ const getOrderAndSearch = async (req, res) => {
       endDate,
       status,
       orderCode,
-       phoneNumber,
+      phoneNumber,
       isPay,
       isGetAll,
     } = req.query;
- 
+
     const searchConditions = {};
 
     if (startDate && endDate) {
@@ -557,7 +557,6 @@ const getOrderAndSearch = async (req, res) => {
     if (orderCode) {
       searchConditions._id = orderCode;
     }
- 
 
     if (phoneNumber) {
       searchConditions.phoneNumber = { $regex: new RegExp(phoneNumber, "i") };
@@ -565,9 +564,11 @@ const getOrderAndSearch = async (req, res) => {
 
     const result = await Order.find(searchConditions).sort({ createAt: -1 });
 
-     const formattedResult = result.map(item => ({
+    const formattedResult = result.map((item) => ({
       ...item.toObject(),
-      createAt: moment(item.createAt).startOf('day').format('YYYY-MM-DD HH:mm:ss'),
+      createAt: moment(item.createAt)
+        .startOf("day")
+        .format("YYYY-MM-DD HH:mm:ss"),
     }));
 
     res.json(formattedResult);

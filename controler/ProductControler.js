@@ -101,7 +101,7 @@ module.exports = addDetailsProduct;
 const addImageProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
   const { color } = req.body;
-  const host = req.hostname;
+  const host = req.get("host");
   const filePath = req.protocol + "://" + host + "/" + req.file.path;
   const imageProduct = await new ImageProduct({
     idProduct,
