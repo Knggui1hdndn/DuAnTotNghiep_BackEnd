@@ -164,9 +164,8 @@ const LoginUser = async (req, res) => {
   try {
     const user = await User.findOne({
       $or: [{ email: email }, { phoneNumber: email }],
-      roleType: roleType,
-    });
-    //  console.log(data);
+     });
+       console.log(roleType +"  "+email);
     if (!user) {
       res.status(400).json({ error: "Account không hợp lệ" });
     } else {

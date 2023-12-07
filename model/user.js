@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
     enum: Object.values(RoleType), // Sử dụng giá trị của enum TypeRole
     default: RoleType.USER, // Giá trị mặc định là USER
   },
+  createAt:{
+    type:Number,
+    default:Date.now()
+  }
 });
 userSchema.pre('save', async function (next) {
     try {

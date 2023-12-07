@@ -89,7 +89,7 @@ app.use("/order", order);
 app.use("/evaluate", evaluate);
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
-app.use("/static",static)
+app.use("/statistical",static)
  
 // 404 Not Found middleware
 app.use((req, res, next) => {
@@ -107,7 +107,7 @@ app.use((err, req, res, next) => {
  
 // Start server
 const port = 8000;
- server.listen(port, "192.168.0.109", () =>
+ server.listen(port, "192.168.1.181", () =>
   console.log(`Server is listening on port ${port}`)
 );
 module.exports={admin}

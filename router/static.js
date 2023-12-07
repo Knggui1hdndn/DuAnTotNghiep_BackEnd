@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const StaticControler =  require('../controler/StaticControler')
+const StatisticalControler =  require('../controler/StatisticalControler')
 
-router.route("/revenue").get(StaticControler.getReveNue).post(StaticControler.postReveNue);
-router.route("/user").get(StaticControler.getUser).post(StaticControler.postUser);
+router.route("/").get(StatisticalControler.statistical) 
+ 
 
 module.exports = router;

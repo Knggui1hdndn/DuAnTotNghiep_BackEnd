@@ -10,24 +10,24 @@ const productSchema = new mongoose.Schema({
   star: {
     type: Number,
     default: 0.0,
-   },
+  },
   description: String,
   productDetails: {
-    type:[
+    type: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "ProductDetail",
       },
-    ]
-    ,default:[]
+    ],
+    default: [],
   },
   idCata: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
   },
-  timeCreateAt:{
-    type:Number,
-    default:Date.now()
+  createAt: {
+    type: Number,
+    default: Date.now()
   }
 });
 
@@ -81,30 +81,30 @@ productSchema.pre("save", async function (next) {
     });
 
     // Update the associated DetailOrder documents with the new price, sale, and intoMoney
-  try {
-    await DetailOrder.updateMany(
-      {
-        _id: { $in: unpaidDetailOrders.map((detailOrder) => detailOrder._id) },
-      },
-      {
-        $set: {
-          price: product.price,
-          sale: product.sale,
-          intoMoney: {
-            $multiply: [
-              "$quantity",
-              {
-                $subtract: [1, { $divide: ["$sale", 100] }],
-              },
-              "$price", // Use '$price' to reference the product price
-            ],
+    try {
+      await DetailOrder.updateMany(
+        {
+          _id: {
+            $in: unpaidDetailOrders.map((detailOrder) => detailOrder._id),
           },
         },
-      }
-    );
-  } catch (error) {
-    
-  }
+        {
+          $set: {
+            price: product.price,
+            sale: product.sale,
+            intoMoney: {
+              $multiply: [
+                "$quantity",
+                {
+                  $subtract: [1, { $divide: ["$sale", 100] }],
+                },
+                "$price", // Use '$price' to reference the product price
+              ],
+            },
+          },
+        }
+      );
+    } catch (error) {}
   }
 
   next();

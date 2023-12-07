@@ -5,20 +5,20 @@ const { Product } = require("../model/product");
 const GenerateOtp = require("../services/generateOtp");
 const schedule = require("node-schedule"); // Thêm "schedule"
 const { error } = require("console");
+
 const { Order, DetailOrder, payments, status } = require("../model/order");
 const updateProfile = async (req, res, next) => {
   try {
-    const host = req.hostname;
+    const host = req.get("host");
     const filePath = req.protocol + "://" + host + "/" + req.file.path;
     console.log(filePath);
-    const avatarFile = req.file;
     const name = req.body.name;
     const address = req.body.address;
     const phoneNumber = req.body.phoneNumber;
     const email = req.body.email;
     const userNew = await User.findOneAndUpdate(
       { _id: req.user._id },
-      { name, address, phoneNumber, email, avatar:filePath },
+      { name, address, phoneNumber, email, avatar: filePath },
       { new: true }
     );
     res.status(201).send(userNew);
@@ -33,22 +33,20 @@ const searchProduct = async (req, res, next) => {
     const skip = req.query.skip != null ? req.query.skip : 0;
 
     const data = await Product.find({ name: { $regex: name, $options: "i" } })
-    .limit(10)
-    .skip(skip)
+      .limit(10)
+      .skip(skip)
+
       .populate({
         path: "productDetails",
-        options: { limit: 1 },
-         populate: {
-          options: { limit: 1 },
+        populate: {
           path: "imageProductQuantity",
           populate: {
             path: "imageProduct",
-            options: { limit: 1 },
           },
         },
-      })
- 
-      console.error(data);
+      });
+
+    console.error(data);
     res.json(data);
   } catch (error) {
     console.error("Lỗi khi truy vấn dữ liệu:", error);
@@ -58,16 +56,14 @@ const searchProduct = async (req, res, next) => {
 
 //danh sách người dùng
 const getUser = async (req, res, next) => {
-  try{
-   const users = await User.find({ roleType: "USER"})
+  try {
+    const users = await User.find({ roleType: "USER" });
     res.status(200).json(users);
-  }catch(error){
+  } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Server error" });
   }
-  
 };
-
 
 const generateQrPay = async (req, res, next) => {
   const { idOrder } = req.query;
@@ -86,7 +82,7 @@ const generateQrPay = async (req, res, next) => {
         .json({ error: "An error occurred. Please try again" });
     }
     const payQr = await PayQR.findOne({
-      idOrder:order._id,
+      idOrder: order._id,
       idUser: idUser,
     });
     console.log("ook nhe" + payQr);
@@ -112,7 +108,7 @@ const generateQrPay = async (req, res, next) => {
       return res.status(200).json(savedPayQR);
     }
     payQr.timeCurrent = Date.now();
-console.log(payQr.timeCurrent)
+    console.log(payQr.timeCurrent);
     return res.status(200).json(payQr);
   } catch (error) {
     console.log(error);
@@ -120,4 +116,4 @@ console.log(payQr.timeCurrent)
   }
 };
 
-module.exports = { generateQrPay, searchProduct, updateProfile, getUser};
+module.exports = { generateQrPay, searchProduct, updateProfile, getUser };

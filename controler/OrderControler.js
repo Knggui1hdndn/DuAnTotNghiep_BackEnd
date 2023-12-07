@@ -258,6 +258,7 @@ const getDetailsOrders = async (req, res) => {
   var idOrder = req.query.idOrder;
 
   if (idOrder != null) {
+    console.log("okoakoaofafsaf");
     const order = await Order.findById(idOrder);
     var orderDetails = await DetailOrder.find({
       idOrder: idOrder,
@@ -284,7 +285,6 @@ const getDetailsOrders = async (req, res) => {
         name: idProduct.name,
         color: idImageProductQuantity.imageProduct.color,
         image: idImageProductQuantity.imageProduct.image,
-        quantity: idImageProductQuantity.quantity,
       };
     });
 
@@ -299,6 +299,8 @@ const getDetailsOrders = async (req, res) => {
 };
 const getUnpaidInvoiceDetails = async (req, res) => {
   try {
+    console.log("okoakoaofafsaf1");
+
     const order = await Order.findOne({
       idUser: req.user._id,
       isPay: false,
@@ -306,7 +308,7 @@ const getUnpaidInvoiceDetails = async (req, res) => {
     });
 
     if (order) {
-      await getDetailsOrderById(order._id);
+      const orderDetails = await getDetailsOrderById(order._id);
       if (orderDetails) {
         res.status(200).json(orderDetails);
       } else {
@@ -324,6 +326,7 @@ const getUnpaidInvoiceDetails = async (req, res) => {
   }
 };
 const getDetailsOrderById = async (idOrder) => {
+  console.log("sadasdsdasd" + idOrder);
   const orderDetails = await DetailOrder.find({
     idOrder: idOrder,
   })
@@ -337,6 +340,7 @@ const getDetailsOrderById = async (idOrder) => {
         path: "imageProduct",
       },
     });
+  console.log("sadasdsdasd" + orderDetails);
   return orderDetails;
 };
 const processDetailsOrder = async (req, res) => {
@@ -527,7 +531,7 @@ const checkBuyNow = async (req, res, next) => {
 };
 const moment = require("moment");
 
- const getOrderAndSearch = async (req, res) => {
+const getOrderAndSearch = async (req, res) => {
   try {
     let {
       startDate,
@@ -567,7 +571,7 @@ const moment = require("moment");
     const formattedResult = result.map((item) => ({
       ...item.toObject(),
       createAt: moment(item.createAt)
-        .startOf("day")
+        .startOf("second")
         .format("YYYY-MM-DD HH:mm:ss"),
     }));
 
@@ -577,11 +581,15 @@ const moment = require("moment");
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-const updateStatusOrder = async (req, res,next) => {
+const updateStatusOrder = async (req, res, next) => {
   try {
     const { status, idOrder } = req.query;
- 
-    const order = await Order.findByIdAndUpdate(idOrder, { status }, { new: true });
+
+    const order = await Order.findByIdAndUpdate(
+      idOrder,
+      { status },
+      { new: true }
+    );
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
@@ -605,6 +613,7 @@ module.exports = {
   updateDetailOrders,
   getOrderByStatus,
   purchase,
-  updatePayment,updateStatusOrder,
-  getOrder, 
+  updatePayment,
+  updateStatusOrder,
+  getOrder,
 };

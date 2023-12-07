@@ -184,7 +184,7 @@ const getProductsSale = (req, res, next) => {
 };
 
 const getProductsNew = (req, res, next) => {
-  getProducts(req, res, next, "timeCreateAt");
+  getProducts(req, res, next, "createAt");
 };
 
 const addFavourite = async (req, res, next) => {
@@ -246,14 +246,15 @@ const getAllFavourites = async (req, res, next) => {
 };
 
 const getProductByIdCate = async (req, res, next) => {
-  const skip = req.query.skip == null ? req.query.skip : 0;
+  // Set skip to 0 if req.query.skip is not provided
+  const skip = req.query.skip == null ? 0 : parseInt(req.query.skip);
 
   const idCategory = req.params.idCategory; // Assuming the category ID is in the route parameter
   try {
     const products = await Product.find({ idCata: idCategory })
       .populate({
         path: "idCata",
-        select: "category", 
+        select: "category",
       })
       .populate({
         path: "productDetails",
@@ -266,13 +267,17 @@ const getProductByIdCate = async (req, res, next) => {
       })
       .skip(skip)
       .limit(5)
-      .lean()
+      .lean();
+
+    console.log(products.length);
+
     res.json(products);
   } catch (error) {
     // Handle any errors that occur during the query
     res.status(500).json({ error: "Server error" });
   }
 };
+
  const calculateTotalProduct = async (req, res, next) => {
   try {
       
