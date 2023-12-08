@@ -63,20 +63,45 @@ const addEvaluates = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+const adminGetEvaluation = async (req, res) => {
+  const idProduct = req.params.idProduct;
+  try {
+    const lissEvaluate = await Evaluate.find({
+      idProduct: idProduct,
+    })
+      .populate("idUser", "name avatar")
+      .select("-feelings")
+      .lean();
+    const result = lissEvaluate.map((item) => {
+      const { idUser, ...rest } = item;
+      return {
+        ...rest,
+        name: idUser.name,
+        idUser: idUser._id,
+        avatar: idUser.avatar,
+      };
+    });
 
+    if (result) {
+      return res.status(200).send(result);
+    }
+    return res.status(404).json({ error: "Object not found" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 const getEvaluates = async (req, res) => {
   const idProduct = req.params.idProduct;
   const skip = req.query.skip != null ? req.query.skip : 0;
   try {
     const lissEvaluate = await Evaluate.find({
-      idProduct:  idProduct ,
+      idProduct: idProduct,
     })
       .populate("idUser")
       .populate("feelings")
       .limit(5)
-      .skip(skip)
-      ;
-      console.log(lissEvaluate.length+"   "+skip)
+      .skip(skip);
+    console.log(lissEvaluate.length + "   " + skip);
 
     if (lissEvaluate) {
       return res.status(200).send(lissEvaluate);
@@ -111,7 +136,7 @@ const deleteEvaluates = async (req, res) => {
         }
       }
     }
-    return res.status(404).json({ error: "Object not found" });
+    return res.status(200).json({ message: "Delete Successfully" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -182,4 +207,5 @@ module.exports = {
   getEvaluates,
   addEvaluates,
   handelFeelingEvaluates,
+  adminGetEvaluation,
 };

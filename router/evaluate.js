@@ -27,7 +27,11 @@ router
   .route("/:idProduct")
   .post(upload.array("avatars", 5), EvaluateControler.addEvaluates)
   .get(EvaluateControler.getEvaluates);
-router.route("/:idEvaluate").delete(EvaluateControler.deleteEvaluates);
+  router
+  .route("/admin/:idProduct")
+   .get(EvaluateControler.adminGetEvaluation);
+router.route("/admin/:idEvaluate").delete(EvaluateControler.deleteEvaluates);
+
 router
   .route("/:idEvaluate/feeling")
   .post(EvaluateControler.handelFeelingEvaluates);

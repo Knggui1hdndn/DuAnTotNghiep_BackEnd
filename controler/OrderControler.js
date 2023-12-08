@@ -3,6 +3,27 @@ const { Order, DetailOrder, payments, status } = require("../model/order");
 const { Product, ImageQuantity } = require("../model/product");
 const PayQR = require("../model/pay");
 const Notification = require("../model/notification");
+
+const addLadingCode = async (req, res, next) => {
+  try {
+    if (!req.params.idOrder || !req.body.ladingCode) {
+      return res.status(400).json({ error: "Thiếu thông tin cần thiết." });
+    }
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.idOrder,
+      { ladingCode: req.body.ladingCode },
+      { new: true }
+    );
+    if (!updatedOrder) {
+      return res.status(404).json({ error: "Không tìm thấy đơn hàng." });
+    }
+    res.status(201).json(updatedOrder);
+  } catch (error) {
+    console.error("Lỗi khi thêm mã lading:", error);
+    res.status(500).json({ error: "Đã xảy ra lỗi server." });
+  }
+};
+
 const updatePayment = async (req, res, next) => {
   const { money, timePayment, note } = req.body;
   try {
@@ -616,4 +637,5 @@ module.exports = {
   updatePayment,
   updateStatusOrder,
   getOrder,
+  addLadingCode,
 };

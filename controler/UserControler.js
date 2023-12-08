@@ -7,6 +7,25 @@ const schedule = require("node-schedule"); // Thêm "schedule"
 const { error } = require("console");
 
 const { Order, DetailOrder, payments, status } = require("../model/order");
+const updateStatusUser =async (req, res, next) => {
+  try {
+    if (  req.body.status==null) {
+      return res.status(400).json({ error: "Thiếu thông tin cần thiết." });
+    }
+    const updatedOrder = await User.findByIdAndUpdate(
+      req.user._id,
+      { status: req.body.status },
+      { new: true }
+    );
+    if (!updatedOrder) {
+      return res.status(404).json({ error: "Không tìm thấy user." });
+    }
+    res.status(201).json(updatedOrder);
+  } catch (error) {
+    console.error("Lỗi khi thêm mã lading:", error);
+    res.status(500).json({ error: "Đã xảy ra lỗi server." });
+  }
+}
 const updateProfile = async (req, res, next) => {
   try {
     const host = req.get("host");
@@ -116,4 +135,4 @@ const generateQrPay = async (req, res, next) => {
   }
 };
 
-module.exports = { generateQrPay, searchProduct, updateProfile, getUser };
+module.exports = { generateQrPay, searchProduct, updateProfile, getUser,updateStatusUser };

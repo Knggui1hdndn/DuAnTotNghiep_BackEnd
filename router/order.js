@@ -14,7 +14,8 @@ router
   .put(OrderControler.updateDetailOrders)
   .delete(OrderControler.deleteOrderDetails);
 router.route("/detail-order/selectAll").put(OrderControler.selectedAll);
-
+router
+  .route("/ladingCode/:idOrder").put(OrderControler.addLadingCode)
 router
   .route("/count/orderDetails-notification")
   .get(OrderControler.getCountNotiAndOrderDetails);

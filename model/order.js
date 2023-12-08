@@ -79,6 +79,7 @@ const orderSchema = new mongoose.Schema({
     enum: Object.values(status), // Sử dụng giá trị của enum TypeFeeling
     default: status.HOLLOW,
   },
+  ladingCode:String
 });
 // Tạo model Product
 const Order = mongoose.model("Order", orderSchema);
