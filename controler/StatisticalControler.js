@@ -4,8 +4,9 @@ const { Product, ImageQuantity } = require("../model/product");
 const Evaluate = require("../model/evaluate.js");
 
 const User = require("../model/user.js");
-const countAllSp = async ( ) => {
-  const count = await Product.countDocuments();
+const countAllSp = async (periodProduct) => {
+  console.log(periodProduct)
+  const count = await Product.countDocuments(periodProduct);
   return count;
 };
 const countProductNew = async (period) => {
@@ -34,14 +35,11 @@ const countProductSold = async (period) => {
       $group: {
         _id: null,
         countProductSold: { $sum: "$quantity" },
+        revenue: { $sum: "$intoMoney" },
       },
     },
   ]);
-  if (countProductSold.length > 0) {
-    return countProductSold[0].countProductSold;
-  } else {
-    return 0;
-  }
+  return countProductSold;
 };
 
 const countOrderNew = async (period) => {
@@ -86,7 +84,6 @@ const countReturns = async (period) => {
 };
 
 const top5Product = async (period) => {
-  console.log(period)
   const products = await Product.find(period)
     .select("-idCata -productDetails")
     .limit(5)
@@ -104,17 +101,30 @@ const statistical = async (req, res) => {
         $gte: moment(startDate).startOf("day"),
         $lte: moment(endDate).endOf("day"),
       };
-    } else {
-      return res.status(400).send("illegal");
     }
+
+    if (req.query.isGetAll) {
+      period.createAt = {
+        $lte: moment(Date.now()).endOf("day"),
+      };
+    }
+    console.log(period.createAt)
     const periodProduct = { ...period };
+    const periodProduct3 = { ...period };
     const periodOrder = { ...period };
     const top5 = { ...period };
     const periodProduct1 = { ...period };
+    const d = await countProductSold(periodProduct);
+    var revenue = 0;
+    var productSold = 0;
+    if (d.length > 0) {
+      productSold = d[0].countProductSold;
+      revenue = d[0].revenue;
+    }
     const result = {
-      countAllSp:await countAllSp(),
-      countProductNew: await countProductNew(periodProduct),
-      countProductSold: await countProductSold(periodProduct),
+      countAllSp: await countAllSp(period),
+      countProductNew: await countProductNew(periodProduct3),
+      countProductSold: productSold,
       countOrderNew: await countOrderNew(period),
       countUserNew: await countUserNew(periodOrder),
       countWaitForConfirmation: await countWaitForConfirmation(period),
@@ -124,6 +134,7 @@ const statistical = async (req, res) => {
       countCancel: await countCancel(period),
       countReturns: await countReturns(period),
       countEvaluateNew: await countEvaluateNew(periodProduct1),
+      revenue: revenue,
       top5Product: await top5Product(top5),
     };
     res.status(200).json(result);
