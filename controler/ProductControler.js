@@ -302,7 +302,7 @@ const getProductByIdCate = async (req, res, next) => {
         },
       },
     ]);
-
+console.log(totalQuantity+product.productDetails)
     if (totalQuantity.length > 0) {
       res.json(totalQuantity[0].totalQuantity);
     } else {

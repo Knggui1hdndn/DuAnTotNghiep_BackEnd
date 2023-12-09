@@ -4,7 +4,10 @@ const { Product, ImageQuantity } = require("../model/product");
 const Evaluate = require("../model/evaluate.js");
 
 const User = require("../model/user.js");
-
+const countAllSp = async ( ) => {
+  const count = await Product.countDocuments();
+  return count;
+};
 const countProductNew = async (period) => {
   const count = await Product.countDocuments(period);
   return count;
@@ -109,7 +112,7 @@ const statistical = async (req, res) => {
     const top5 = { ...period };
     const periodProduct1 = { ...period };
     const result = {
-      
+      countAllSp:await countAllSp(),
       countProductNew: await countProductNew(periodProduct),
       countProductSold: await countProductSold(periodProduct),
       countOrderNew: await countOrderNew(period),
