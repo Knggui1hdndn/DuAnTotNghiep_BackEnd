@@ -5,7 +5,7 @@ const Evaluate = require("../model/evaluate.js");
 
 const User = require("../model/user.js");
 const countAllSp = async (periodProduct) => {
-  console.log(periodProduct)
+  console.log(periodProduct);
   const count = await Product.countDocuments(periodProduct);
   return count;
 };
@@ -103,12 +103,13 @@ const statistical = async (req, res) => {
       };
     }
 
-    if (req.query.isGetAll) {
+    if (req.query.isGetAll === "true") {
       period.createAt = {
         $lte: moment(Date.now()).endOf("day"),
       };
+    } else if (req.query.isGetAll === "false") {
+      return res.json([]);
     }
-    console.log(period.createAt)
     const periodProduct = { ...period };
     const periodProduct3 = { ...period };
     const periodOrder = { ...period };
