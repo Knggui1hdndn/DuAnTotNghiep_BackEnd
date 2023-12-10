@@ -278,6 +278,24 @@ const getProductByIdCate = async (req, res, next) => {
   }
 };
 
+const getAllProduct = async(req, res, next) => {
+  try{
+    const totalProduct = await Product.count("id");
+    console.log(totalAccount);
+    if (!totalAccount) {
+      return res
+        .status(400)
+        .json({ status: 400, message: "connect fail database" });
+    }
+    return res.status(200).json({ status: 200, totalProduct: totalProduct });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal server error" });
+  }
+}
+
  const calculateTotalProduct = async (req, res, next) => {
   try {
       
@@ -372,6 +390,7 @@ module.exports = {
   getCategories,
   getProducts,
   getProductByIdCate,
+  getAllProduct,
   getDetailsProduct,
   getAllFavourites,
   addFavourite,
