@@ -31,7 +31,7 @@ const updateCategories = async(req, res, next) =>{
     req.body
   )
   if(!updateCategories){
-    return res.send(404).json({ message: "categoryBook not found" });
+    return res.send(404).json({ message: "categoryMenStyle not found" });
   }
   res.status(200).json(updateCategories);
 
@@ -42,7 +42,7 @@ const deleteCategories = async(req, res, next) =>{
     idCategories
   );
   if(!deleteCategories){
-    return res.send(404).json({ message: "categoryBook not found" });
+    return res.send(404).json({ message: "categoryMenStyle not found" });
   }
   res.json("delete success");
 }
