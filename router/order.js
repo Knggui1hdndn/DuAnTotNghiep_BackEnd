@@ -14,14 +14,19 @@ router
   .put(OrderControler.updateDetailOrders)
   .delete(OrderControler.deleteOrderDetails);
 router.route("/detail-order/selectAll").put(OrderControler.selectedAll);
-router
-  .route("/ladingCode/:idOrder").put(OrderControler.addLadingCode)
+router.route("/ladingCode/:idOrder").put(OrderControler.addLadingCode);
+
+router.route("/cancel/:idOrder").post(OrderControler.cancelOrder);
+
 router
   .route("/count/orderDetails-notification")
   .get(OrderControler.getCountNotiAndOrderDetails);
 router.route("/checkBuyNow").post(OrderControler.checkBuyNow);
-router.route("/").get(OrderControler.getOrderByStatus).put(OrderControler.updateStatusOrder);
+router
+  .route("/")
+  .get(OrderControler.getOrderByStatus)
+  .put(OrderControler.updateStatusOrder);
 router.route("/search").get(OrderControler.getOrderAndSearch);
 router.route("/purchase").post(OrderControler.purchase);
 router.route("/listOrder").get(OrderControler.getOrder);
- module.exports = router; 
+module.exports = router;

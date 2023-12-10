@@ -226,9 +226,7 @@ const getAllFavourites = async (req, res, next) => {
     });
     if (!favourite) return res.status(200).json([]);
 
-    const product = await Product.find({
-      _id: { $in: favourite.idProduct },
-    }).populate({
+    const product = await Product.find(favourite.idProduct).populate({
       path: "productDetails",
       populate: {
         path: "imageProductQuantity",
@@ -237,6 +235,7 @@ const getAllFavourites = async (req, res, next) => {
         },
       },
     });
+    console.log(product);
 
     res.status(200).json(product);
   } catch (error) {
@@ -367,7 +366,14 @@ const getCategories = async (req, res, next) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-
+const getAll = async(req,res)=>{
+  const data = await Product.find();
+  if(data){
+    return res.json({
+      total:data
+    })
+  }
+}
 module.exports = {
   getCategories,
   getProducts,
@@ -386,5 +392,5 @@ module.exports = {
   updateImageQuantity,
   updateProductDetails,
   updateProduct,
-  calculateTotalProduct
+  calculateTotalProduct,getAll
 };

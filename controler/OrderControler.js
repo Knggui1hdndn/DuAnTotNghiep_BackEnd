@@ -251,6 +251,28 @@ const getCountNotiAndOrderDetails = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+const cancelOrder = async (req, res) => {
+  try {
+    const orderId = req.params.idOrder;
+    const filter = { _id: orderId, status: status.WAIT_FOR_CONFIRMATION };
+
+    const updatedOrder = await Order.findOneAndUpdate(
+      filter,
+      { $set: { status: status.CANCEL } },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res
+        .status(404)
+        .json({message:"Order not found or not in pending confirmation status"});
+    }
+    res.status(200).json({message:"Order canceled successfully"});
+  } catch (error) {
+    res.status(500).json({ error: "error" });
+  }
+};
+
 const getCountDetailsOrder = async (req) => {
   try {
     const order = await Order.findOne({
@@ -625,6 +647,7 @@ const updateStatusOrder = async (req, res, next) => {
 
 module.exports = {
   getOrderAndSearch,
+  cancelOrder,
   checkBuyNow,
   processDetailsOrder,
   getCountNotiAndOrderDetails,

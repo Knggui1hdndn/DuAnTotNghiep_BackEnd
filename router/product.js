@@ -30,7 +30,7 @@ router.route("/details").put(ProductControler.updateProductDetails);
 router.route("/image/:idProduct").get(ProductControler.getImageProduct).post(upload.single("image" ),ProductControler.addImageProduct);
 router.route("/productQuantity/:idProduct").post(ProductControler.addProductQuantity).put(ProductControler.updateImageQuantity) ;
 router.route("/productQuantity"). put(ProductControler.updateImageQuantity) ;
-
+router.route("/get-all").get(ProductControler.getAll);
 
 
 

@@ -13,7 +13,7 @@ const updateStatusUser =async (req, res, next) => {
       return res.status(400).json({ error: "Thiếu thông tin cần thiết." });
     }
     const updatedOrder = await User.findByIdAndUpdate(
-      req.user._id,
+      req.query.idUser,
       { status: req.body.status },
       { new: true }
     );
