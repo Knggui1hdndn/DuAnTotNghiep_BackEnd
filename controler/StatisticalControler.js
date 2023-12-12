@@ -89,21 +89,11 @@ const top5Product = async (period) => {
       path: "idCata",
       select: "category", // Chỉ lấy trường "name" từ bảng "category"
     })
-    .populate({
-      path: "productDetails",
-      populate: {
-        path: "imageProductQuantity",
-        populate: {
-          path: "imageProduct",
-        },
-      },
-    })
     .select("-productDetails")
     .limit(5)
+    .sort({ sold: -1 })
     .lean();
-  if (sortField) {
-    query.sort({ [sortField]: -1 });
-  }
+ 
 
   const products = await query;
   console.log(products);
@@ -116,8 +106,7 @@ const top5Product = async (period) => {
       } catch (error) {}
       return modifiedProduct;
     })
-    .sort({ sold: -1 });
-  return modifiedResult;
+   return modifiedResult;
 };
 const moment = require("moment");
 

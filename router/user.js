@@ -21,8 +21,7 @@ const upload = multer({
 router.use(passport.authenticate("jwt", { session: false }));
 router.route("/generate/QR").get(UserControler.generateQrPay);
 router.route("/search").get(UserControler.searchProduct);
-router.route("/search").get(UserControler.searchProduct);
-router.route("/").put(UserControler.updateStatusUser);
+router.route("/").put(UserControler.updateStatusUser).get(UserControler.searchUser);
 router
   .route("/editaccount")
   .post(upload.single("avatar"), UserControler.updateProfile);

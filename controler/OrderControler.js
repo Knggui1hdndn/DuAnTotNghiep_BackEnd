@@ -254,32 +254,35 @@ const getCountNotiAndOrderDetails = async (req, res) => {
 };
 
 const updateProductWhenStatusOrder = async (idOrder, statuss) => {
-  const detailsOrder = await DetailOrder.find({ idOrder: idOrder });
-  console.log("dkfksjf" + detailsOrder);
-  const updateSold = detailsOrder.map(({ idProduct, quantity }) => ({
-    updateOne: {
-      filter: { _id: idProduct },
-      update: {
-        $inc: { sold: statuss === status.CANCEL ? -quantity : quantity },
-      },
-      upsert: true,
-    },
-  }));
-
-  const updatesQuantity = detailsOrder.map(
-    ({ idImageProductQuantity, quantity }) => ({
+  if (statuss === status.CANCEL || statuss === status.WAIT_FOR_CONFIRMATION) {
+    const detailsOrder = await DetailOrder.find({ idOrder: idOrder });
+    const updateSold = detailsOrder.map(({ idProduct, quantity }) => ({
       updateOne: {
-        filter: { _id: idImageProductQuantity },
+        filter: { _id: idProduct },
         update: {
-          $inc: { quantity: statuss === status.CANCEL ? quantity : -quantity },
+          $inc: { sold: statuss === status.CANCEL ? -quantity : quantity },
         },
         upsert: true,
       },
-    })
-  );
+    }));
 
-  const productUpdateResult = await Product.bulkWrite(updateSold);
-  const quantityUpdateResult = await ImageQuantity.bulkWrite(updatesQuantity);
+    const updatesQuantity = detailsOrder.map(
+      ({ idImageProductQuantity, quantity }) => ({
+        updateOne: {
+          filter: { _id: idImageProductQuantity },
+          update: {
+            $inc: {
+              quantity: statuss === status.CANCEL ? quantity : -quantity,
+            },
+          },
+          upsert: true,
+        },
+      })
+    );
+
+    const productUpdateResult = await Product.bulkWrite(updateSold);
+    const quantityUpdateResult = await ImageQuantity.bulkWrite(updatesQuantity);
+  }
 };
 
 const cancelOrder = async (req, res) => {
@@ -613,7 +616,8 @@ const getOrderAndSearch = async (req, res) => {
       status,
       orderCode,
       phoneNumber,
-      isPay,ladingCode,
+      isPay,
+      ladingCode,
       isGetAll,
     } = req.query;
 
@@ -633,7 +637,7 @@ const getOrderAndSearch = async (req, res) => {
       searchConditions.isPay = isPay;
     }
     if (orderCode) {
-      searchConditions._id = orderCode;
+      searchConditions.codeOrders = orderCode;
     }
     if (ladingCode) {
       searchConditions.ladingCode = ladingCode;
@@ -658,6 +662,15 @@ const getOrderAndSearch = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const NotificationControler = require("../controler/Notification");
+const statusMessages = {
+  WAIT_FOR_CONFIRMATION: "You order is waiting for confirmation",
+  CONFIRMED: "You order has been confirmed",
+  DELIVERING: "You order is on the way",
+  DELIVERED: "You order has been delivered",
+  CANCEL: "You order has been canceled", // Custom message for canceled orders
+  RETURNS: "You order is being returned",
+ };
 const updateStatusOrder = async (req, res, next) => {
   try {
     const { status, idOrder } = req.query;
@@ -672,14 +685,25 @@ const updateStatusOrder = async (req, res, next) => {
       return res.status(404).json({ error: "Order not found" });
     }
     await updateProductWhenStatusOrder(order._id, status);
-
-    res.status(201).json(order);
+    await NotificationControler.sendNotification(order.idUser, {
+      url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
+      title: "Update on orders " +order.codeOrders,
+      body:status[getKeyByValue(status)],
+    });
+     res.status(201).json(order);
   } catch (error) {
     console.error("Error updating order status:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
-
+const getKeyByValue = (value) => {
+  for (const key in statusMessages) {
+    if (statusMessages[key] === value) {
+      return key;
+    }
+  }
+  return null; // Trả về null nếu không tìm thấy giá trị
+};
 module.exports = {
   getOrderAndSearch,
   cancelOrder,

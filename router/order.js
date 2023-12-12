@@ -15,7 +15,6 @@ router
   .delete(OrderControler.deleteOrderDetails);
 router.route("/detail-order/selectAll").put(OrderControler.selectedAll);
 router.route("/ladingCode/:idOrder").put(OrderControler.addLadingCode);
-
 router.route("/cancel/:idOrder").post(OrderControler.cancelOrder);
 
 router

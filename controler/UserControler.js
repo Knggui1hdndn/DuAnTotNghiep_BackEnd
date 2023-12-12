@@ -5,11 +5,11 @@ const { Product } = require("../model/product");
 const GenerateOtp = require("../services/generateOtp");
 const schedule = require("node-schedule"); // Thêm "schedule"
 const { error } = require("console");
-
+const NotificationControler = require("../controler/Notification");
 const { Order, DetailOrder, payments, status } = require("../model/order");
-const updateStatusUser =async (req, res, next) => {
+const updateStatusUser = async (req, res, next) => {
   try {
-    if (  req.body.status==null) {
+    if (req.body.status == null) {
       return res.status(400).json({ error: "Thiếu thông tin cần thiết." });
     }
     const updatedOrder = await User.findByIdAndUpdate(
@@ -25,7 +25,7 @@ const updateStatusUser =async (req, res, next) => {
     console.error("Lỗi khi thêm mã lading:", error);
     res.status(500).json({ error: "Đã xảy ra lỗi server." });
   }
-}
+};
 const updateProfile = async (req, res, next) => {
   try {
     const host = req.get("host");
@@ -54,7 +54,6 @@ const searchProduct = async (req, res, next) => {
     const data = await Product.find({ name: { $regex: name, $options: "i" } })
       .limit(10)
       .skip(skip)
-
       .populate({
         path: "productDetails",
         populate: {
@@ -72,7 +71,19 @@ const searchProduct = async (req, res, next) => {
     res.status(500).json({ error: "Lỗi máy chủ nội bộ" });
   }
 };
-
+const searchUser = async (req, res, next) => {
+  try {
+    const { name } = req.query;
+ 
+    const data = await User.find({ name: { $regex: name, $options: "i" } })
+ 
+    console.error(data);
+    res.json(data);
+  } catch (error) {
+    console.error("Lỗi khi truy vấn dữ liệu:", error);
+    res.status(500).json({ error: "Lỗi máy chủ nội bộ" });
+  }
+};
 //danh sách người dùng
 const getUser = async (req, res, next) => {
   try {
@@ -104,7 +115,6 @@ const generateQrPay = async (req, res, next) => {
       idOrder: order._id,
       idUser: idUser,
     });
-    console.log("ook nhe" + payQr);
     if (payQr == null) {
       const newPayQR = new PayQR({
         idOrder: order._id,
@@ -117,22 +127,38 @@ const generateQrPay = async (req, res, next) => {
 
       const savedPayQR = await newPayQR.save();
 
-      // Schedule job to remove PayQR
-      // const job = schedule.scheduleJob(savedPayQR.expiration, async () => {
-      //   const existingQR = await PayQR.findOneAndRemove({
-      //     _id: savedPayQR._id,
-      //   });
-      //   console.log("ook nhe" + existingQR);
-      // });
+      const job = schedule.scheduleJob(savedPayQR.expiration, async () => {
+        await scheduleOrderExp("Your order was canceled due to unpaid payment");
+      });
       return res.status(200).json(savedPayQR);
     }
     payQr.timeCurrent = Date.now();
-    console.log(payQr.timeCurrent);
     return res.status(200).json(payQr);
   } catch (error) {
     console.log(error);
     return res.status(400).json({ error: "Server error" });
   }
 };
+async function scheduleOrderExp(payQr, idOrder, bodyNoti) {
+  const job = schedule.scheduleJob(payQr.expiration, async () => {
+    const order = await Order.findByIdAndUpdate(
+      {  _id: idOrder,},
+      { status: status.CANCEL },
+      { new: true }
+    );
 
-module.exports = { generateQrPay, searchProduct, updateProfile, getUser,updateStatusUser };
+    NotificationControler.sendNotification(order.idUser, {
+      url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
+      title: "Payment",
+      body: bodyNoti,
+    });
+  });
+}
+module.exports = {
+  searchUser,
+  generateQrPay,
+  searchProduct,
+  updateProfile,
+  getUser,
+  updateStatusUser,
+};

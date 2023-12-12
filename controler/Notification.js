@@ -35,19 +35,13 @@ const updateNotification = async (req, res) => {
   }
 };
 
-async function sendNotification(registrationTokens, notification, idUser) {
-  var message;
-  if (Array.isArray(registrationTokens)) {
-    message = {
-      tokens: registrationTokens,
-      data: notification,
-    };
-  } else {
-    message = {
-      token: registrationTokens,
-      data: notification,
-    };
-  }
+async function sendNotification(notification, idUser) {
+  const findTokenFcm = await TokenFcm.findOne({ idUser: idUser });
+
+  var message = {
+    token: findTokenFcm.token,
+    data: notification,
+  };
 
   console.log(message);
   const notifications = await Notification.create({

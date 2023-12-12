@@ -374,7 +374,36 @@ const getAll = async(req,res)=>{
     })
   }
 }
+const searchProduct = async (req, res, next) => {
+  try {
+    const { name } = req.query;
+    const data = await Product.find({ name: { $regex: name, $options: "i" } })
+    .populate({
+      path: "idCata",
+      select: "category",
+    })
+    .select("-productDetails")
+    .lean();
+    
+
+    const products = await data;
+    console.log(products);
+
+    const modifiedResult = products.map((product) => {
+      const modifiedProduct = { ...product };
+      try {
+        modifiedProduct.idCata = product.idCata.category;
+      } catch (error) {}
+      return modifiedProduct;
+    });
+    res.json(modifiedResult);
+   } catch (error) {
+    console.error("Lỗi khi truy vấn dữ liệu:", error);
+    res.status(500).json({ error: "Lỗi máy chủ nội bộ" });
+  }
+};
 module.exports = {
+  searchProduct,
   getCategories,
   getProducts,
   getProductByIdCate,

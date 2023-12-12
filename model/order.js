@@ -65,6 +65,14 @@ const orderSchema = new mongoose.Schema({
   phoneNumber: String,
   description: String,
   totalAmount: Number,
+  codeOrders: {
+    type: String,
+    default: function generateCodeOrder() {
+      const randomNumber = Math.floor(Math.random() * Date.now()) + 1;
+      const randomString = String(randomNumber);
+      return "MS" + randomString;
+    },
+  },
   isPay: {
     type: Boolean,
     default: false,
@@ -79,7 +87,7 @@ const orderSchema = new mongoose.Schema({
     enum: Object.values(status), // Sử dụng giá trị của enum TypeFeeling
     default: status.HOLLOW,
   },
-  ladingCode:String
+  ladingCode: String,
 });
 // Tạo model Product
 const Order = mongoose.model("Order", orderSchema);
