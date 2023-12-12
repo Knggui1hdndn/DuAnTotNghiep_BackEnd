@@ -83,16 +83,7 @@ const purchase = async (req, res) => {
     let totalAmount = 0;
     const newIdOrder = new mongoose.Types.ObjectId();
     if (req.query.idOrder == null) {
-      const {
-        idProduct,
-        idImageProductQuantity,
-        quantity,
-        size,
-        sale,
-        price,
-        intoMoney,
-        isSelected,
-      } = req.body.detailOrderRequest;
+      const { size, intoMoney } = req.body.detailOrderRequest;
 
       const newOrders = new Order({
         idUser: req.user._id,
@@ -110,6 +101,12 @@ const purchase = async (req, res) => {
       const newDetailOrder = new DetailOrder(req.body.detailOrderRequest);
       newDetailOrder.idOrder = newOrders._id;
       await newDetailOrder.save();
+      const tesst = await updateProductWhenStatusOrder(
+        newOrders._id,
+        status.WAIT_FOR_CONFIRMATION
+      );
+      console.log(tesst);
+
       if (!newDetailOrder) {
         throw new Error("Sever error");
       } else {
@@ -152,6 +149,10 @@ const purchase = async (req, res) => {
       status: status.WAIT_FOR_CONFIRMATION,
     });
     await newOrder.save();
+    await updateProductWhenStatusOrder(
+      newOrder._id,
+      status.WAIT_FOR_CONFIRMATION
+    );
 
     if (!newOrder) {
       throw new Error("Sever error");
@@ -251,6 +252,36 @@ const getCountNotiAndOrderDetails = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+const updateProductWhenStatusOrder = async (idOrder, statuss) => {
+  const detailsOrder = await DetailOrder.find({ idOrder: idOrder });
+  console.log("dkfksjf" + detailsOrder);
+  const updateSold = detailsOrder.map(({ idProduct, quantity }) => ({
+    updateOne: {
+      filter: { _id: idProduct },
+      update: {
+        $inc: { sold: statuss === status.CANCEL ? -quantity : quantity },
+      },
+      upsert: true,
+    },
+  }));
+
+  const updatesQuantity = detailsOrder.map(
+    ({ idImageProductQuantity, quantity }) => ({
+      updateOne: {
+        filter: { _id: idImageProductQuantity },
+        update: {
+          $inc: { quantity: statuss === status.CANCEL ? quantity : -quantity },
+        },
+        upsert: true,
+      },
+    })
+  );
+
+  const productUpdateResult = await Product.bulkWrite(updateSold);
+  const quantityUpdateResult = await ImageQuantity.bulkWrite(updatesQuantity);
+};
+
 const cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.idOrder;
@@ -261,13 +292,13 @@ const cancelOrder = async (req, res) => {
       { $set: { status: status.CANCEL } },
       { new: true }
     );
-
+    await updateProductWhenStatusOrder(updatedOrder._id, status.CANCEL);
     if (!updatedOrder) {
-      return res
-        .status(404)
-        .json({message:"Order not found or not in pending confirmation status"});
+      return res.status(404).json({
+        message: "Order not found or not in pending confirmation status",
+      });
     }
-    res.status(200).json({message:"Order canceled successfully"});
+    res.status(200).json({ message: "Order canceled successfully" });
   } catch (error) {
     res.status(500).json({ error: "error" });
   }
@@ -582,7 +613,7 @@ const getOrderAndSearch = async (req, res) => {
       status,
       orderCode,
       phoneNumber,
-      isPay,
+      isPay,ladingCode,
       isGetAll,
     } = req.query;
 
@@ -603,6 +634,9 @@ const getOrderAndSearch = async (req, res) => {
     }
     if (orderCode) {
       searchConditions._id = orderCode;
+    }
+    if (ladingCode) {
+      searchConditions.ladingCode = ladingCode;
     }
 
     if (phoneNumber) {
@@ -637,6 +671,7 @@ const updateStatusOrder = async (req, res, next) => {
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
+    await updateProductWhenStatusOrder(order._id, status);
 
     res.status(201).json(order);
   } catch (error) {

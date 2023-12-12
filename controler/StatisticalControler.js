@@ -84,11 +84,40 @@ const countReturns = async (period) => {
 };
 
 const top5Product = async (period) => {
-  const products = await Product.find(period)
-    .select("-idCata -productDetails")
+  const query = Product.find(period)
+    .populate({
+      path: "idCata",
+      select: "category", // Chỉ lấy trường "name" từ bảng "category"
+    })
+    .populate({
+      path: "productDetails",
+      populate: {
+        path: "imageProductQuantity",
+        populate: {
+          path: "imageProduct",
+        },
+      },
+    })
+    .select("-productDetails")
     .limit(5)
+    .lean();
+  if (sortField) {
+    query.sort({ [sortField]: -1 });
+  }
+
+  const products = await query;
+  console.log(products);
+
+  const modifiedResult = products
+    .map((product) => {
+      const modifiedProduct = { ...product };
+      try {
+        modifiedProduct.idCata = product.idCata.category;
+      } catch (error) {}
+      return modifiedProduct;
+    })
     .sort({ sold: -1 });
-  return products;
+  return modifiedResult;
 };
 const moment = require("moment");
 
