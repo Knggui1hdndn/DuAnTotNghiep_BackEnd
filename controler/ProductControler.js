@@ -395,7 +395,7 @@ const getCategories = async (req, res, next) => {
 const getAll = async (req, res) => {
   var { status } = req.query;
   if (status == null) status = true;
-  const data = await Product.find(status);
+  const data = await Product.find({status:status});
   if (data) {
     return res.json({
       total: data,
@@ -408,7 +408,7 @@ const searchProduct = async (req, res, next) => {
     var { status } = req.query;
     if (status == null) status = true;
     const data = await Product.find({
-      name: { $regex: name, $options: "i", status: true },
+      name: { $regex: name, $options: "i", status: status },
     })
       .populate({
         path: "idCata",
