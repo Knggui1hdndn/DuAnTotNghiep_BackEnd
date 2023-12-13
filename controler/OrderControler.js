@@ -3,6 +3,7 @@ const { Order, DetailOrder, payments, status } = require("../model/order");
 const { Product, ImageQuantity } = require("../model/product");
 const PayQR = require("../model/pay");
 const Notification = require("../model/notification");
+const TokenFcm = require("../model/tokenFcm");
 
 const addLadingCode = async (req, res, next) => {
   try {
@@ -39,17 +40,15 @@ const updatePayment = async (req, res, next) => {
         { isPay: true },
         { new: true }
       );
-      const findTokenFcm = await TokenFcm.findOne({ idUser: order.idUser });
-      NotificationControler.sendNotification(
-        findTokenFcm.token,
-        {
+       NotificationControler.sendNotification(
+         {
           url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
           title: "Payment",
-          body: "Your order has been payment confirmed",
+          body: `Your ${order.codeOrders} order has been paid`,
         },
-        findTokenFcm.idUser
+        order.idUser
       );
-      res.json({ success: true, order });
+      res.json({ success: true});
     } else {
       res.status(404).json({
         success: false,
@@ -685,11 +684,11 @@ const updateStatusOrder = async (req, res, next) => {
       return res.status(404).json({ error: "Order not found" });
     }
     await updateProductWhenStatusOrder(order._id, status);
-    await NotificationControler.sendNotification(order.idUser, {
+    await NotificationControler.sendNotification(  {
       url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
       title: "Update on orders " +order.codeOrders,
       body:status[getKeyByValue(status)],
-    });
+    },order.idUser);
      res.status(201).json(order);
   } catch (error) {
     console.error("Error updating order status:", error);

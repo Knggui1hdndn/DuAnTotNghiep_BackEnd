@@ -74,9 +74,9 @@ const searchProduct = async (req, res, next) => {
 const searchUser = async (req, res, next) => {
   try {
     const { name } = req.query;
- 
-    const data = await User.find({ name: { $regex: name, $options: "i" } })
- 
+
+    const data = await User.find({ name: { $regex: name, $options: "i" } });
+
     console.error(data);
     res.json(data);
   } catch (error) {
@@ -126,10 +126,7 @@ const generateQrPay = async (req, res, next) => {
       newPayQR.url = qrDataURL;
 
       const savedPayQR = await newPayQR.save();
-
-      const job = schedule.scheduleJob(savedPayQR.expiration, async () => {
-        await scheduleOrderExp("Your order was canceled due to unpaid payment");
-      });
+      await scheduleOrderExp("Your order was canceled due to unpaid payment");
       return res.status(200).json(savedPayQR);
     }
     payQr.timeCurrent = Date.now();
@@ -142,16 +139,16 @@ const generateQrPay = async (req, res, next) => {
 async function scheduleOrderExp(payQr, idOrder, bodyNoti) {
   const job = schedule.scheduleJob(payQr.expiration, async () => {
     const order = await Order.findByIdAndUpdate(
-      {  _id: idOrder,},
+      { _id: idOrder,isPay:false,  payments:payments.TRANSFER},
       { status: status.CANCEL },
       { new: true }
     );
 
-    NotificationControler.sendNotification(order.idUser, {
+    NotificationControler.sendNotification(  {
       url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
       title: "Payment",
       body: bodyNoti,
-    });
+    },order.idUser);
   });
 }
 module.exports = {
