@@ -382,7 +382,7 @@ const getDetailsProduct = async (req, res, next) => {
 
 const getCategories = async (req, res, next) => {
   try {
-    const { status } = req.query;
+    var { status } = req.query;
     if (status == null) status = true;
     const categories = await Category.find({ status: status });
     categories.unshift({ _id: "", category: "All" });
@@ -393,7 +393,7 @@ const getCategories = async (req, res, next) => {
   }
 };
 const getAll = async (req, res) => {
-  const { status } = req.query;
+  var { status } = req.query;
   if (status == null) status = true;
   const data = await Product.find(status);
   if (data) {
@@ -404,8 +404,9 @@ const getAll = async (req, res) => {
 };
 const searchProduct = async (req, res, next) => {
   try {
-    const { status, name } = req.query;
-
+    const {   name } = req.query;
+    var { status } = req.query;
+    if (status == null) status = true;
     const data = await Product.find({
       name: { $regex: name, $options: "i", status: true },
     })
