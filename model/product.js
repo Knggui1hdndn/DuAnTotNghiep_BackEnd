@@ -25,6 +25,10 @@ const productSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
   },
+  status:{
+    type:Boolean,
+    default:true
+},
   createAt: {
     type: Number,
     default: Date.now()

@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 // Định nghĩa schema cho class Category
 const categorySchema = new mongoose.Schema({
    category: String,
+   status:{
+      type:Boolean,
+      default:true
+   }
 });
 
 // Tạo model Category

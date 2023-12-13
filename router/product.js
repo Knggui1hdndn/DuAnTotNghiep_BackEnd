@@ -22,7 +22,9 @@ const upload = multer({
 
 router.use(passport.authenticate("jwt", { session: false }));
 router.route("/search").get(ProductControler.searchProduct);
-
+router
+.route("/visibility")
+.put(ProductControler.visibilityProduct)
 router.route("/categories").get(ProductControler.getCategories);
 router
   .route("/")
@@ -54,5 +56,6 @@ router
   .post(ProductControler.addFavourite)
   .delete(ProductControler.deleteFavourite)
   .get(ProductControler.getAllFavourites);
+
 
 module.exports = router;

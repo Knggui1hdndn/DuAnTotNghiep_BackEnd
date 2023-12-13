@@ -1,54 +1,80 @@
 const mongoose = require("mongoose");
 const Category = require("../model/category");
+const { Product } = require("../model/product");
 
 const getCategories = async (req, res, next) => {
   try {
-    const categories = await Category.find();
-    categories.unshift({ _id: "", category: "All" });
+    var {status} =req.query
+    if(status==null) status=true
+    const categories = await Category.find({status:status});
+    // categories.unshift({ _id: "", category: "All" });
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
 };
 
-const addCategories = async(req, res, next) =>{
-    const {category} =req.body;
+const addCategories = async (req, res, next) => {
+  const { category } = req.body;
 
-    const items = new Category({category:category});
-    try{
-       await items.save();
-      res.status(201).send(items);
-    }catch(error){
-      console.log(error);
+  const items = new Category({ category: category });
+  try {
+    await items.save();
+    res.status(201).send(items);
+  } catch (error) {
+    console.log(error);
+  }
+};
+const visibilityCategory = async (req, res) => {
+  try {
+    const {status}=req.body
+    const update = await Category.findByIdAndUpdate(
+      req.query.idCategory ,
+      { status: status },
+      { new: true } // Return the modified document
+    );
+
+    if (!update) {
+      return res.status(404).send("Category not found");
     }
-  };
 
-const updateCategories = async(req, res, next) =>{
+    const update2 = await Product.updateMany(
+      { idCata: update._id },
+      { status: status }
+    );
+
+    res.status(200).send("Update successfully");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+ 
+
+const updateCategories = async (req, res, next) => {
   const idCategories = req.params._id;
-  
+
   const updateCategories = await Category.findByIdAndUpdate(
     idCategories,
-    req.body
-  )
-  if(!updateCategories){
+    req.body.category
+  );
+  if (!updateCategories) {
     return res.send(404).json({ message: "categoryBook not found" });
   }
   res.status(200).json(updateCategories);
-
-}
-const deleteCategories = async(req, res, next) =>{
+};
+const deleteCategories = async (req, res, next) => {
   const idCategories = req.params._id;
-  const deleteCategories = await Category.findByIdAndDelete(
-    idCategories
-  );
-  if(!deleteCategories){
+  const deleteCategories = await Category.findByIdAndDelete(idCategories);
+  if (!deleteCategories) {
     return res.send(404).json({ message: "categoryBook not found" });
   }
   res.json("delete success");
-}
-module.exports={
+};
+module.exports = {
   getCategories,
   addCategories,
   updateCategories,
-  deleteCategories,
-}
+  deleteCategories,visibilityCategory
+};

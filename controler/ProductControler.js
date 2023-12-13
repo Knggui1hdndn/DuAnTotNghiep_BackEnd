@@ -21,6 +21,25 @@ const addProduct = async (req, res) => {
   }).save();
   res.status(201).send(newProduct);
 };
+
+const visibilityProduct = async (req, res) => {
+  try {
+    const {status}=req.body
+    const update = await Product.findByIdAndUpdate(
+      req.query.idProduct,
+      { status: status },
+      { new: true } // Return the modified document
+    );
+     if (!update) {
+      return res.status(404).send("Product not found");
+    }
+
+    res.status(200).send("Update successfully");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
 const updateProduct = async (req, res) => {
   const { name, price, sale, description, idCata, id } = req.body;
   const updatedProduct = await Product.findByIdAndUpdate(
@@ -140,6 +159,8 @@ const addProductQuantity = async (req, res) => {
 const getProducts = async (req, res, next, sortField = null) => {
   try {
     const limit = 5;
+    var{status} =req.query
+    if(status==null) status=true
     const query = Product.find()
       .populate({
         path: "idCata",
@@ -250,7 +271,7 @@ const getProductByIdCate = async (req, res, next) => {
 
   const idCategory = req.params.idCategory; // Assuming the category ID is in the route parameter
   try {
-    const products = await Product.find({ idCata: idCategory })
+    const products = await Product.find({ idCata: idCategory, status: true })
       .populate({
         path: "idCata",
         select: "category",
@@ -277,9 +298,8 @@ const getProductByIdCate = async (req, res, next) => {
   }
 };
 
- const calculateTotalProduct = async (req, res, next) => {
+const calculateTotalProduct = async (req, res, next) => {
   try {
-      
     const product = await Product.findOne({ _id: req.params.idProduct });
 
     if (!product) {
@@ -301,14 +321,17 @@ const getProductByIdCate = async (req, res, next) => {
         },
       },
     ]);
-console.log(totalQuantity+product.productDetails)
+    console.log(totalQuantity + product.productDetails);
     if (totalQuantity.length > 0) {
       res.json(totalQuantity[0].totalQuantity);
     } else {
       res.json(0);
     }
   } catch (error) {
-    console.error("Error calculating total product quantity by idProduct:", error);
+    console.error(
+      "Error calculating total product quantity by idProduct:",
+      error
+    );
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -359,32 +382,39 @@ const getDetailsProduct = async (req, res, next) => {
 
 const getCategories = async (req, res, next) => {
   try {
-    const categories = await Category.find();
+    const { status } = req.query;
+    if (status == null) status = true;
+    const categories = await Category.find({ status: status });
     categories.unshift({ _id: "", category: "All" });
+
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
 };
-const getAll = async(req,res)=>{
-  const data = await Product.find();
-  if(data){
+const getAll = async (req, res) => {
+  const { status } = req.query;
+  if (status == null) status = true;
+  const data = await Product.find(status);
+  if (data) {
     return res.json({
-      total:data
-    })
+      total: data,
+    });
   }
-}
+};
 const searchProduct = async (req, res, next) => {
   try {
-    const { name } = req.query;
-    const data = await Product.find({ name: { $regex: name, $options: "i" } })
-    .populate({
-      path: "idCata",
-      select: "category",
+    const { status, name } = req.query;
+
+    const data = await Product.find({
+      name: { $regex: name, $options: "i", status: true },
     })
-    .select("-productDetails")
-    .lean();
-    
+      .populate({
+        path: "idCata",
+        select: "category",
+      })
+      .select("-productDetails")
+      .lean();
 
     const products = await data;
     console.log(products);
@@ -397,7 +427,7 @@ const searchProduct = async (req, res, next) => {
       return modifiedProduct;
     });
     res.json(modifiedResult);
-   } catch (error) {
+  } catch (error) {
     console.error("Lỗi khi truy vấn dữ liệu:", error);
     res.status(500).json({ error: "Lỗi máy chủ nội bộ" });
   }
@@ -421,5 +451,7 @@ module.exports = {
   updateImageQuantity,
   updateProductDetails,
   updateProduct,
-  calculateTotalProduct,getAll
+  calculateTotalProduct,
+  getAll,
+  visibilityProduct,
 };

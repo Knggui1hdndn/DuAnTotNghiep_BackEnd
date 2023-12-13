@@ -49,9 +49,11 @@ const updateProfile = async (req, res, next) => {
 const searchProduct = async (req, res, next) => {
   try {
     const { name } = req.query;
+    var { status } = req.query;
+    if(status==null) status=true
     const skip = req.query.skip != null ? req.query.skip : 0;
-
-    const data = await Product.find({ name: { $regex: name, $options: "i" } })
+ 
+    const data = await Product.find({ name: { $regex: name, $options: "i" } ,status:status})
       .limit(10)
       .skip(skip)
       .populate({
@@ -75,7 +77,7 @@ const searchUser = async (req, res, next) => {
   try {
     const { name } = req.query;
 
-    const data = await User.find({ name: { $regex: name, $options: "i" } });
+    const data = await User.find({ name: { $regex: name, $options: "i" },roleType:'USER' });
 
     console.error(data);
     res.json(data);

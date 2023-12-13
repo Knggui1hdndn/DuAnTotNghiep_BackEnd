@@ -40,15 +40,15 @@ const updatePayment = async (req, res, next) => {
         { isPay: true },
         { new: true }
       );
-       NotificationControler.sendNotification(
-         {
+      NotificationControler.sendNotification(
+        {
           url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
           title: "Payment",
           body: `Your ${order.codeOrders} order has been paid`,
         },
         order.idUser
       );
-      res.json({ success: true});
+      res.json({ success: true });
     } else {
       res.status(404).json({
         success: false,
@@ -669,7 +669,8 @@ const statusMessages = {
   DELIVERED: "You order has been delivered",
   CANCEL: "You order has been canceled", // Custom message for canceled orders
   RETURNS: "You order is being returned",
- };
+};
+
 const updateStatusOrder = async (req, res, next) => {
   try {
     const { status, idOrder } = req.query;
@@ -684,12 +685,15 @@ const updateStatusOrder = async (req, res, next) => {
       return res.status(404).json({ error: "Order not found" });
     }
     await updateProductWhenStatusOrder(order._id, status);
-    await NotificationControler.sendNotification(  {
-      url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
-      title: "Update on orders " +order.codeOrders,
-      body:status[getKeyByValue(status)],
-    },order.idUser);
-     res.status(201).json(order);
+    await NotificationControler.sendNotification(
+      {
+        url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
+        title: "Update on orders " + order.codeOrders,
+        body: status[getKeyByValue(status)],
+      },
+      order.idUser
+    );
+    res.status(201).json(order);
   } catch (error) {
     console.error("Error updating order status:", error);
     res.status(500).json({ error: "Server error" });
@@ -703,6 +707,7 @@ const getKeyByValue = (value) => {
   }
   return null; // Trả về null nếu không tìm thấy giá trị
 };
+
 module.exports = {
   getOrderAndSearch,
   cancelOrder,

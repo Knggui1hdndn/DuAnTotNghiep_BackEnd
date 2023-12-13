@@ -15,5 +15,7 @@ router.put(
   "/updateCategories/:_id",
   CategoriesControler.updateCategories
 ).delete(CategoriesControler.deleteCategories);
-
+router
+.route("/visibility")
+.put(CategoriesControler.visibilityCategory)
 module.exports = router;
