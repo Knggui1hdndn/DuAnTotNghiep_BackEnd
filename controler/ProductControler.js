@@ -24,7 +24,14 @@ const addProduct = async (req, res) => {
 
 const visibilityProduct = async (req, res) => {
   try {
-    const {status}=req.body
+    const {status,idCategory}=req.body
+    const categories = await Category. findById(idCategory)
+if(!categories){
+  return res.status(400).send("Thư mục không tồn tại")
+}
+if(categories.status===false){
+  return res.status(400).send("Không thể cập nhật sản phẩm của thư mục bị ẩn")
+}
     const update = await Product.findByIdAndUpdate(
       req.query.idProduct,
       { status: status },
