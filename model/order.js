@@ -36,23 +36,24 @@ detailOrderSchema.pre("findOneAndUpdate", async function (next) {
 
 detailOrderSchema.set("strictPopulate", false);
 const payments = {
-  TRANSFER: "Transfer",
-  CASH: "Cash",
-  VIRTUAL: "Virtual",
+  TRANSFER: "Chuyển khoản",
+  CASH: "Tiền mặt",
+  VIRTUAL: "Thanh toán điện tử",
 };
 
 const status = {
-  WAIT_FOR_CONFIRMATION: "Wait for confirmation",
-  CONFIRMED: "Confirmed",
-  DELIVERING: "Delivering",
-  DELIVERED: "Delivered",
-  CANCEL: "Cancel",
-  RETURNS: "Returns",
-  HOLLOW: "Hollow",
+  WAIT_FOR_CONFIRMATION: "Chờ xác nhận",
+  CONFIRMED: "Đã xác nhận",
+  DELIVERING: "Đang giao hàng",
+  DELIVERED: "Đã giao hàng",
+  CANCEL: "Hủy",
+  RETURNS: "Trả hàng",
+  HOLLOW: "Rỗng",
 };
 
+
 const orderSchema = new mongoose.Schema({
-  idUser: {
+  idUser: { 
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },

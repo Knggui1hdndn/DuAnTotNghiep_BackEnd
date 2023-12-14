@@ -13,7 +13,7 @@ const addProduct = async (req, res) => {
   const newProduct = await new Product({
     name,
     price,
-    sold,
+    sold:0,
     sale,
     description,
     star: 0.0,
@@ -95,6 +95,10 @@ const addDetailsProduct = async (req, res) => {
   const idProductObjectId = new mongoose.Types.ObjectId(idProduct);
 
   try {
+    const checkSize =await ProductDetail.findOne({idProduct:idProductObjectId,size:size})
+    if(checkSize){
+    return  res.status(201).send(checkSize);
+    }
     // Tạo một ProductDetail mới với idProductObjectId và size
     const newProductDetail = await new ProductDetail({
       idProduct: idProductObjectId,

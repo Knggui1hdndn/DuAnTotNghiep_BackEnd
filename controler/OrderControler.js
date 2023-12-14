@@ -44,7 +44,7 @@ const updatePayment = async (req, res, next) => {
         {
           url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
           title: "Payment",
-          body: `Your ${order.codeOrders} order has been paid`,
+          body: `Đơn hàng ${order.codeOrders} của bạn đã được thanh toán`,
         },
         order.idUser
       );
@@ -187,8 +187,8 @@ const selectedAll = async (req, res) => {
 // danh sách đơn hàng
 const getOrder = async (req, res, next) => {
   try {
-    const orders = await Order.find();
-    orders.unshift({ _id: "", orders: "All" });
+    const orders = await Order.find({status:!status.HOLLOW});
+    // orders.unshift({ _id: "", orders: "All" });
     res.status(200).json(orders);
   } catch (error) {
     console.log(error);
@@ -663,13 +663,14 @@ const getOrderAndSearch = async (req, res) => {
 };
 const NotificationControler = require("../controler/Notification");
 const statusMessages = {
-  WAIT_FOR_CONFIRMATION: "You order is waiting for confirmation",
-  CONFIRMED: "You order has been confirmed",
-  DELIVERING: "You order is on the way",
-  DELIVERED: "You order has been delivered",
-  CANCEL: "You order has been canceled", // Custom message for canceled orders
-  RETURNS: "You order is being returned",
+  WAIT_FOR_CONFIRMATION: "Đơn hàng của bạn đang chờ xác nhận",
+  CONFIRMED: "Đơn hàng của bạn đã được xác nhận",
+  DELIVERING: "Đơn hàng của bạn đang trên đường giao hàng",
+  DELIVERED: "Đơn hàng của bạn đã được giao thành công",
+  CANCEL: "Đơn hàng của bạn đã bị hủy", // Thông báo tùy chỉnh cho đơn hàng bị hủy
+  RETURNS: "Đơn hàng của bạn đang được trả lại",
 };
+
 
 const updateStatusOrder = async (req, res, next) => {
   try {

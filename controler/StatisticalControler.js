@@ -93,20 +93,18 @@ const top5Product = async (period) => {
     .limit(5)
     .sort({ sold: -1 })
     .lean();
- 
 
   const products = await query;
   console.log(products);
 
-  const modifiedResult = products
-    .map((product) => {
-      const modifiedProduct = { ...product };
-      try {
-        modifiedProduct.idCata = product.idCata.category;
-      } catch (error) {}
-      return modifiedProduct;
-    })
-   return modifiedResult;
+  const modifiedResult = products.map((product) => {
+    const modifiedProduct = { ...product };
+    try {
+      modifiedProduct.idCata = product.idCata.category;
+    } catch (error) {}
+    return modifiedProduct;
+  });
+  return modifiedResult;
 };
 const moment = require("moment");
 
