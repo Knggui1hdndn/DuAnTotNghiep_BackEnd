@@ -4,9 +4,13 @@ const { Product } = require("../model/product");
 
 const getCategories = async (req, res, next) => {
   try {
-    var {status} =req.query
-    if(status==null) status=true
-    const categories = await Category.find({status:status});
+    const { status } = req.query;
+    let query = {};
+    if (status === null  ) {
+      query.status = true;  
+    }
+
+    const categories = await Category.find(query);
     // categories.unshift({ _id: "", category: "All" });
     res.status(200).json(categories);
   } catch (error) {

@@ -187,7 +187,7 @@ const selectedAll = async (req, res) => {
 // danh sách đơn hàng
 const getOrder = async (req, res, next) => {
   try {
-    const orders = await Order.find({status:!status.HOLLOW});
+    const orders = await Order.find({ status: !status.HOLLOW });
     // orders.unshift({ _id: "", orders: "All" });
     res.status(200).json(orders);
   } catch (error) {
@@ -616,8 +616,7 @@ const getOrderAndSearch = async (req, res) => {
       orderCode,
       phoneNumber,
       isPay,
-      ladingCode,
-      isGetAll,
+       isGetAll,
     } = req.query;
 
     const searchConditions = {};
@@ -638,10 +637,7 @@ const getOrderAndSearch = async (req, res) => {
     if (orderCode) {
       searchConditions.codeOrders = orderCode;
     }
-    if (ladingCode) {
-      searchConditions.ladingCode = ladingCode;
-    }
-
+ 
     if (phoneNumber) {
       searchConditions.phoneNumber = { $regex: new RegExp(phoneNumber, "i") };
     }
@@ -671,26 +667,26 @@ const statusMessages = {
   RETURNS: "Đơn hàng của bạn đang được trả lại",
 };
 
-
 const updateStatusOrder = async (req, res, next) => {
   try {
-    const { status, idOrder } = req.query;
+    const { idOrder } = req.query;
+    const statuss = req.query.status;
 
     const order = await Order.findByIdAndUpdate(
       idOrder,
-      { status },
+      { status: statuss },
       { new: true }
     );
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
-    await updateProductWhenStatusOrder(order._id, status);
+    await updateProductWhenStatusOrder(order._id, statuss);
     await NotificationControler.sendNotification(
       {
         url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
-        title: "Update on orders " + order.codeOrders,
-        body: status[getKeyByValue(status)],
+        title: "Cập nhật đơn hàng " + order.codeOrders,
+        body: status[getKeyByValue(statuss)],
       },
       order.idUser
     );
@@ -701,8 +697,10 @@ const updateStatusOrder = async (req, res, next) => {
   }
 };
 const getKeyByValue = (value) => {
-  for (const key in statusMessages) {
-    if (statusMessages[key] === value) {
+  for (const key in status) {
+    if (status[key] === value) {
+      console.log("sdsd" + status[key]);
+
       return key;
     }
   }

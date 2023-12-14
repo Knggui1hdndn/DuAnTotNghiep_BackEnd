@@ -163,9 +163,13 @@ const addProductQuantity = async (req, res) => {
 const getProducts = async (req, res, next, sortField = null) => {
   try {
     const limit = 5;
-    var{status} =req.query
-    if(status==null) status=true
-    const query = Product.find()
+    const { status } = req.query;
+    let query1 = {};
+    if (status === null  ) {
+      query1.status = true;  
+    }
+
+    const query = Product.find(query1)
       .populate({
         path: "idCata",
         select: "category", // Chỉ lấy trường "name" từ bảng "category"
