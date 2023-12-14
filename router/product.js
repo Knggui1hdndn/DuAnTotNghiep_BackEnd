@@ -42,7 +42,9 @@ router.route("/details").put(ProductControler.updateProductDetails);
 router
   .route("/image/:idProduct")
   .get(ProductControler.getImageProduct)
-  .post(upload.single("image"), ProductControler.addImageProduct);
+  .post(upload.single("image"), ProductControler.addImageProduct)
+  router
+  .route("/image/:idImageProduct").put(upload.single("image"), ProductControler.updateImage);
 router
   .route("/productQuantity/:idProduct")
   .post(ProductControler.addProductQuantity)

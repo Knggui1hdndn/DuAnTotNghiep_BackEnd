@@ -126,7 +126,19 @@ const addDetailsProduct = async (req, res) => {
 };
 
 module.exports = addDetailsProduct;
+const updateImage = async (req, res) => {
+ try {
+  const idImageProduct = req.params.idImageProduct;
+  const { color } = req.body;
+  const host = req.get("host");
+  const filePath = req.protocol + "://" + host + "/" + req.file.path;
+  const imageProduct=await ImageProduct.findByIdAndUpdate(idImageProduct,{color:color,image:filePath})
+  res.status(201).json(imageProduct);
+ } catch (error) {
+  res.status(500).send(error.message);
 
+ }
+};
 const addImageProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
   const { color } = req.body;
@@ -460,7 +472,7 @@ module.exports = {
   addProduct,
   addDetailsProduct,
   addImageProduct,
-  getImageProduct,
+  getImageProduct,updateImage,
   addProductQuantity,
   updateImageQuantity,
   updateProductDetails,
