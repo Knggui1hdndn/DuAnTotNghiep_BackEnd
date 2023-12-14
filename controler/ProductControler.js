@@ -165,7 +165,7 @@ const getProducts = async (req, res, next, sortField = null) => {
     const limit = 5;
     const { status } = req.query;
     let query1 = {};
-    if (status === null  ) {
+    if (status === undefined  ) {
       query1.status = true;  
     }
 
@@ -401,9 +401,13 @@ const getCategories = async (req, res, next) => {
   }
 };
 const getAll = async (req, res) => {
-  var { status } = req.query;
-  if (status == null) status = true;
-  const data = await Product.find({status:status});
+  const { status } = req.query;
+  let query = {};
+  if (status === undefined  ) {
+    query.status = true;  
+  }
+
+  const data = await Product.find(query);
   if (data) {
     return res.json({
       total: data,
