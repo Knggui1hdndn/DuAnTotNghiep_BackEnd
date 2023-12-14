@@ -6,8 +6,8 @@ const getCategories = async (req, res, next) => {
   try {
     const { status } = req.query;
     let query = {};
-    if (status === null  ) {
-      query.status = true;  
+    if (status === null) {
+      query.status = true;
     }
 
     const categories = await Category.find(query);
@@ -31,9 +31,9 @@ const addCategories = async (req, res, next) => {
 };
 const visibilityCategory = async (req, res) => {
   try {
-    const {status}=req.body
+    const { status } = req.body;
     const update = await Category.findByIdAndUpdate(
-      req.query.idCategory ,
+      req.query.idCategory,
       { status: status },
       { new: true } // Return the modified document
     );
@@ -54,14 +54,13 @@ const visibilityCategory = async (req, res) => {
   }
 };
 
- 
-
 const updateCategories = async (req, res, next) => {
   const idCategories = req.params._id;
+  const category = req.body.category;
 
   const updateCategories = await Category.findByIdAndUpdate(
     idCategories,
-    req.body.category
+   { category:category},{new:true},
   );
   if (!updateCategories) {
     return res.send(404).json({ message: "categoryBook not found" });
@@ -80,5 +79,6 @@ module.exports = {
   getCategories,
   addCategories,
   updateCategories,
-  deleteCategories,visibilityCategory
+  deleteCategories,
+  visibilityCategory,
 };

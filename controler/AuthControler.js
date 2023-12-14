@@ -169,6 +169,9 @@ const LoginUser = async (req, res) => {
     if (!user) {
       res.status(400).json({ error: "Account không hợp lệ" });
     } else {
+      if(user.status===false){
+     return   res.status(400).json({ error: "Tài khoản của bạn đã bị khóa" });
+      }
       await TokenFcm.findOneAndUpdate(
         { idUser: user._id },
         { idUser: user._id, token: req.header("Fcm") },

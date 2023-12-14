@@ -13,7 +13,7 @@ const addProduct = async (req, res) => {
   const newProduct = await new Product({
     name,
     price,
-    sold:0,
+    sold: 0,
     sale,
     description,
     star: 0.0,
@@ -24,20 +24,22 @@ const addProduct = async (req, res) => {
 
 const visibilityProduct = async (req, res) => {
   try {
-    const {status,idCategory}=req.body
-    const categories = await Category. findById(idCategory)
-if(!categories){
-  return res.status(400).send("Thư mục không tồn tại")
-}
-if(categories.status===false){
-  return res.status(400).send("Không thể cập nhật sản phẩm của thư mục bị ẩn")
-}
+    const { status, idCategory } = req.body;
+    const categories = await Category.findById(idCategory);
+    if (!categories) {
+      return res.status(400).send("Thư mục không tồn tại");
+    }
+    if (categories.status === false) {
+      return res
+        .status(400)
+        .send("Không thể cập nhật sản phẩm của thư mục bị ẩn");
+    }
     const update = await Product.findByIdAndUpdate(
       req.query.idProduct,
       { status: status },
       { new: true } // Return the modified document
     );
-     if (!update) {
+    if (!update) {
       return res.status(404).send("Product not found");
     }
 
@@ -102,9 +104,12 @@ const addDetailsProduct = async (req, res) => {
   const idProductObjectId = new mongoose.Types.ObjectId(idProduct);
 
   try {
-    const checkSize =await ProductDetail.findOne({idProduct:idProductObjectId,size:size})
-    if(checkSize){
-    return  res.status(201).send(checkSize);
+    const checkSize = await ProductDetail.findOne({
+      idProduct: idProductObjectId,
+      size: size,
+    });
+    if (checkSize) {
+      return res.status(201).send(checkSize);
     }
     // Tạo một ProductDetail mới với idProductObjectId và size
     const newProductDetail = await new ProductDetail({
@@ -127,17 +132,20 @@ const addDetailsProduct = async (req, res) => {
 
 module.exports = addDetailsProduct;
 const updateImage = async (req, res) => {
- try {
-  const idImageProduct = req.params.idImageProduct;
-  const { color } = req.body;
-  const host = req.get("host");
-  const filePath = req.protocol + "://" + host + "/" + req.file.path;
-  const imageProduct=await ImageProduct.findByIdAndUpdate(idImageProduct,{color:color,image:filePath})
-  res.status(201).json(imageProduct);
- } catch (error) {
-  res.status(500).send(error.message);
-
- }
+  try {
+    const idImageProduct = req.params.idImageProduct;
+    const { color } = req.body;
+    const host = req.get("host");
+    const filePath = req.protocol + "://" + host + "/" + req.file.path;
+    const imageProduct = await ImageProduct.findByIdAndUpdate(
+      idImageProduct,
+      { color: color, image: filePath },
+      { new: true }
+    );
+    res.status(201).json(imageProduct);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 };
 const addImageProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
@@ -182,11 +190,12 @@ const addProductQuantity = async (req, res) => {
 const getProducts = async (req, res, next, sortField = null) => {
   try {
     const limit = 5;
-    const { status } = req.query;
+    const status = req.query.status;
     let query1 = {};
-    if (status === null  ) {
-      query1.status = true;  
+    if (status === null|| status===undefined) {
+      query1.status = true;
     }
+    console.log(query1);
 
     const query = Product.find(query1)
       .populate({
@@ -211,7 +220,6 @@ const getProducts = async (req, res, next, sortField = null) => {
     }
 
     const products = await query;
-    console.log(products);
 
     const modifiedResult = products.map((product) => {
       const modifiedProduct = { ...product };
@@ -420,8 +428,7 @@ const getCategories = async (req, res, next) => {
   }
 };
 const getAll = async (req, res) => {
-  
-  const data = await Product.find( );
+  const data = await Product.find();
   if (data) {
     return res.json({
       total: data,
@@ -430,10 +437,10 @@ const getAll = async (req, res) => {
 };
 const searchProduct = async (req, res, next) => {
   try {
-    const {   name } = req.query;
- 
+    const { name } = req.query;
+
     const data = await Product.find({
-      name: { $regex: name, $options: "i"  },
+      name: { $regex: name, $options: "i" },
     })
       .populate({
         path: "idCata",
@@ -472,7 +479,8 @@ module.exports = {
   addProduct,
   addDetailsProduct,
   addImageProduct,
-  getImageProduct,updateImage,
+  getImageProduct,
+  updateImage,
   addProductQuantity,
   updateImageQuantity,
   updateProductDetails,
