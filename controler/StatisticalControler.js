@@ -152,7 +152,7 @@ const statistical = async (req, res) => {
       countReturns: await countReturns(period),
       countEvaluateNew: await countEvaluateNew(periodProduct1),
       revenue: revenue,
-      top5Product: await top5Product(top5),
+      top5Product: await top5Product(),
     };
     res.status(200).json(result);
   } catch (error) {

@@ -612,35 +612,42 @@ const getOrderAndSearch = async (req, res) => {
     let {
       startDate,
       endDate,
-      status,
+
       orderCode,
       phoneNumber,
       isPay,
-       isGetAll,
+      isGetAll,
     } = req.query;
+    let   statuss   = req.query.status;
 
     const searchConditions = {};
-
+ 
     if (startDate && endDate) {
       searchConditions.createAt = {
         $gte: moment(startDate).startOf("day"),
         $lte: moment(endDate).endOf("day"),
       };
     }
-
-    if (status) {
-      searchConditions.status = status;
+     
+    if (statuss === undefined) {
+      searchConditions.status = { $ne: status.HOLLOW };
+    }else{
+      searchConditions.status = statuss;
     }
-    if (isPay) {
+    
+ 
+   
+     if (isPay) {
       searchConditions.isPay = isPay;
     }
     if (orderCode) {
       searchConditions.codeOrders = orderCode;
     }
- 
+
     if (phoneNumber) {
       searchConditions.phoneNumber = { $regex: new RegExp(phoneNumber, "i") };
     }
+    console.log( searchConditions)
 
     const result = await Order.find(searchConditions).sort({ createAt: -1 });
 
