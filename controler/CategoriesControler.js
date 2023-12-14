@@ -6,7 +6,7 @@ const getCategories = async (req, res, next) => {
   try {
     const { status } = req.query;
     let query = {};
-    if (status === undefined  ) {
+    if (status === null  ) {
       query.status = true;  
     }
 
