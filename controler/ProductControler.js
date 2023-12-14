@@ -192,8 +192,10 @@ const getProducts = async (req, res, next, sortField = null) => {
     const limit = 5;
     const status = req.query.status;
     let query1 = {};
-    if (status === null|| status===undefined) {
+    if (status === null || status === undefined) {
       query1.status = true;
+    }else{
+      query1={}
     }
     console.log(query1);
 
