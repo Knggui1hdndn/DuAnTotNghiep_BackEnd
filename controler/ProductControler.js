@@ -413,10 +413,9 @@ const getAll = async (req, res) => {
 const searchProduct = async (req, res, next) => {
   try {
     const {   name } = req.query;
-    var { status } = req.query;
-    if (status == null) status = true;
+ 
     const data = await Product.find({
-      name: { $regex: name, $options: "i", status: status },
+      name: { $regex: name, $options: "i"  },
     })
       .populate({
         path: "idCata",
