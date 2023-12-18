@@ -12,15 +12,14 @@ let transporter = nodemailer.createTransport({
   secure: true,
   auth: {
     user: "nguyenduykhang2992003@gmail.com",
-    pass: "wulm nixz scvs wlrk",
+    pass: "prxe qofg xmpg zyxw",
   },
-  debug: true,
-  logger: true,
-});
+  });
 
 const sendOtpEmail = expressAsyncHandler(async (email,res) => {
   try {
-    const otp = parseInt(Math.random() * 100000);
+    const otp = parseInt(Math.random() * 1000000);
+    console.log("oakdokaod"+email)
     const newOtpEmail = await OtpEmail.create({
       email: email,
       otp: otp,
@@ -54,7 +53,7 @@ const sendOtpEmail = expressAsyncHandler(async (email,res) => {
 });
 const verifyOTPEmail = async (email, otp,res) => {
   // Sửa từ req.body.address thành req.body.email
-  const otpEmail = await OtpEmail.findOneAndDelete({ email: email, otp: otp });
+  const otpEmail = await OtpEmail.findOneAndDelete({ email: email, otp: otp }) ;
   if (otpEmail) {
     res.status(200).json({ message: "Verification Success" });
   } else {

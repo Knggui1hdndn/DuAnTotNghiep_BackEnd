@@ -5,6 +5,8 @@ const { Product } = require("../model/product");
 const GenerateOtp = require("../services/generateOtp");
 const schedule = require("node-schedule"); // Thêm "schedule"
 const { error } = require("console");
+const { updateProductWhenStatusOrder
+} = require("../controler/OrderControler");
 const NotificationControler = require("../controler/Notification");
 const { Order, DetailOrder, payments, status } = require("../model/order");
 const updateStatusUser = async (req, res, next) => {
@@ -50,10 +52,13 @@ const searchProduct = async (req, res, next) => {
   try {
     const { name } = req.query;
     var { status } = req.query;
-    if(status==null) status=true
+    if (status == null) status = true;
     const skip = req.query.skip != null ? req.query.skip : 0;
- 
-    const data = await Product.find({ name: { $regex: name, $options: "i" } ,status:status})
+
+    const data = await Product.find({
+      name: { $regex: name, $options: "i" },
+      status: status,
+    })
       .limit(10)
       .skip(skip)
       .populate({
@@ -77,7 +82,10 @@ const searchUser = async (req, res, next) => {
   try {
     const { name } = req.query;
 
-    const data = await User.find({ name: { $regex: name, $options: "i" },roleType:'USER' });
+    const data = await User.find({
+      name: { $regex: name, $options: "i" },
+      roleType: "USER",
+    });
 
     console.error(data);
     res.json(data);
@@ -98,21 +106,38 @@ const getUser = async (req, res, next) => {
 };
 
 const generateQrPay = async (req, res, next) => {
-  const { idOrder } = req.query;
+  const { idOrder, recreate } = req.query;
   const now = Date.now();
   const idUser = req.user._id;
   const paymentType = payments.TRANSFER;
   try {
     // Find and update the order
-    const order = await Order.findOne({
-      _id: idOrder,
-    });
-
+    var order;
+    if ( recreate==="false") {
+      console.log("recreate1"+recreate)
+      order = await Order.findOne({
+        _id: idOrder,
+      });
+    } else {
+      console.log("recreate"+recreate)
+      order = await Order.findByIdAndUpdate(
+        idOrder,
+        {
+          status: status.WAIT_FOR_CONFIRMATION,
+        },
+        { new: true }
+      );
+      await updateProductWhenStatusOrder(
+        order._id,
+        status.WAIT_FOR_CONFIRMATION
+      );
+    }
     if (!order) {
       return res
         .status(404)
         .json({ error: "An error occurred. Please try again" });
     }
+
     const payQr = await PayQR.findOne({
       idOrder: order._id,
       idUser: idUser,
@@ -128,7 +153,9 @@ const generateQrPay = async (req, res, next) => {
       newPayQR.url = qrDataURL;
 
       const savedPayQR = await newPayQR.save();
-      await scheduleOrderExp("Your order was canceled due to unpaid payment");
+      await scheduleOrderExp(
+        "Đơn đặt hàng của bạn đã bị hủy do chưa thanh toán"
+      );
       return res.status(200).json(savedPayQR);
     }
     payQr.timeCurrent = Date.now();
@@ -141,16 +168,19 @@ const generateQrPay = async (req, res, next) => {
 async function scheduleOrderExp(payQr, idOrder, bodyNoti) {
   const job = schedule.scheduleJob(payQr.expiration, async () => {
     const order = await Order.findByIdAndUpdate(
-      { _id: idOrder,isPay:false,  payments:payments.TRANSFER},
+      { _id: idOrder, isPay: false, payments: payments.TRANSFER },
       { status: status.CANCEL },
       { new: true }
     );
 
-    NotificationControler.sendNotification(  {
-      url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
-      title: "Payment",
-      body: bodyNoti,
-    },order.idUser);
+    NotificationControler.sendNotification(
+      {
+        url: "https://www.logolynx.com/images/logolynx/23/23938578fb8d88c02bc59906d12230f3.png",
+        title: "Payment",
+        body: bodyNoti,
+      },
+      order.idUser
+    );
   });
 }
 module.exports = {

@@ -21,6 +21,7 @@ const evaluateSchema = new mongoose.Schema({
   url: [String],
   createAt:{
     type:Number 
+    ,default:Date.now()
   }
 });
 

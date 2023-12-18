@@ -253,13 +253,13 @@ const getCountNotiAndOrderDetails = async (req, res) => {
 };
 
 const updateProductWhenStatusOrder = async (idOrder, statuss) => {
-  if (statuss === status.CANCEL || statuss === status.WAIT_FOR_CONFIRMATION) {
+  if (statuss === status.CANCEL || statuss === status.WAIT_FOR_CONFIRMATION||statuss === status.RETURNS) {
     const detailsOrder = await DetailOrder.find({ idOrder: idOrder });
     const updateSold = detailsOrder.map(({ idProduct, quantity }) => ({
       updateOne: {
         filter: { _id: idProduct },
         update: {
-          $inc: { sold: statuss === status.CANCEL ? -quantity : quantity },
+          $inc: { sold: statuss === status.CANCEL||statuss === status.RETURNS ? -quantity : quantity },
         },
         upsert: true,
       },
@@ -271,7 +271,7 @@ const updateProductWhenStatusOrder = async (idOrder, statuss) => {
           filter: { _id: idImageProductQuantity },
           update: {
             $inc: {
-              quantity: statuss === status.CANCEL ? quantity : -quantity,
+              quantity: statuss === status.CANCEL||statuss === status.RETURNS ? quantity : -quantity,
             },
           },
           upsert: true,
@@ -729,5 +729,5 @@ module.exports = {
   updatePayment,
   updateStatusOrder,
   getOrder,
-  addLadingCode,
+  addLadingCode,updateProductWhenStatusOrder
 };

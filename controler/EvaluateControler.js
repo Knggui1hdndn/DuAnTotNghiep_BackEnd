@@ -20,14 +20,13 @@ const addEvaluates = async (req, res) => {
 
     const newEvaluate = await new Evaluate({
       idProduct: new mongoose.Types.ObjectId(idProduct),
-      idUser: req.user._id,
+      idUser: req.user ,
       star: req.body.star,
       comment: req.body.comment,
       url: imageLinks,
       timeCreated: Date.now(),
     }).save();
-
-    const count = await Evaluate.aggregate([
+     const count = await Evaluate.aggregate([
       {
         $match: {
           idProduct: newEvaluate.idProduct,
@@ -41,7 +40,6 @@ const addEvaluates = async (req, res) => {
         },
       },
     ]);
-
     const averageStar = count.length > 0 ? count[0].averageStar : 0;
     const numberOfEvaluations = count.length > 0 ? count[0].count : 0;
 
@@ -53,9 +51,14 @@ const addEvaluates = async (req, res) => {
         star: averageStar,
       }
     ); //tính trung bình star
-
-    if (newProduct) {
-      return res.status(200).json({ newEvaluate });
+    const lissEvaluate = await Evaluate.findOne({
+      _id: newEvaluate._id,
+    })
+      .populate("idUser")
+      .populate("feelings")
+       console.log(lissEvaluate)
+     if (newProduct) {
+      return res.status(200).send(lissEvaluate );
     }
     return res.status(400).json({ error: "sever error" });
   } catch (error) {

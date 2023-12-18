@@ -9,9 +9,9 @@ const SendEmail = require("../services/sendEmail.js");
 dotenv.config();
 const GOOGLE_CLIENT_ID =
   "470422080037-a8nm0h5fs6tqo1p6p0chpv2co02jirvb.apps.googleusercontent.com";
-const accountSid = "ACa6de830808fa1f3989a8140b87937031";
-const authToken = "786074c113800832ad7cb7108f4b3595 ";
-const verifySid = "VA999c76ae3c784af8d499962020be0754";
+  const accountSid = "ACa6de830808fa1f3989a8140b87937031";
+  const authToken =  "b54bbcf64721a2ab61c04bd185e80952";
+  const verifySid = "VA999c76ae3c784af8d499962020be0754";
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 const twilio = require("twilio")(accountSid, authToken);
 
@@ -21,7 +21,7 @@ const sendOtp = async (req, res, next) => {
   if (type === "phone") {
     sendOTPPhoneNumber(account, res);
   } else {
-    SendEmail.sendOtpEmail(email, res);
+    SendEmail.sendOtpEmail(account, res);
   }
 };
 const verificaionOtp = async (req, res, next) => {
@@ -198,7 +198,7 @@ const verifyGoogleToken = async (idToken) => {
       idToken: idToken,
       audience: GOOGLE_CLIENT_ID, // Điều chỉnh audience theo client ID của bạn
     });
-
+ 
     const payload = ticket.getPayload();
     const userId = payload.sub;
     const picture = payload.picture;
