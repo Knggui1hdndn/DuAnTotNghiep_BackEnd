@@ -156,7 +156,7 @@ const LoginUser = async (req, res) => {
   const email = req.body.account;
   const password = req.body.password;
   var roleType = req.query.roleType;
-  if (roleType) {
+  if (roleType!=null) {
     roleType = "ADMIN";
   } else {
     roleType = "USER";
