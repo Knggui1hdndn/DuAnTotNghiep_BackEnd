@@ -82,7 +82,7 @@ const countCancel = async (period) => {
 const countReturns = async (period) => {
   return getCountByStatus(period, status.RETURNS);
 };
-
+ 
 const top5Product = async (period) => {
   const query = Product.find(period)
     .populate({
@@ -106,11 +106,35 @@ const top5Product = async (period) => {
   });
   return modifiedResult;
 };
+const top5SpXemNhieuNhat = async (period) => {
+  const query = Product.find(period)
+    .populate({
+      path: "idCata",
+      select: "category", // Chỉ lấy trường "name" từ bảng "category"
+    })
+    .select("-productDetails")
+    .limit(5)
+    .sort({ view: -1 })
+    .lean();
+
+  const products = await query;
+  console.log(products);
+
+  const modifiedResult = products.map((product) => {
+    const modifiedProduct = { ...product };
+    try {
+      modifiedProduct.idCata = product.idCata.category;
+    } catch (error) {}
+    return modifiedProduct;
+  });
+  return modifiedResult;
+};
 const moment = require("moment");
 
 const statistical = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
+    console.log(startDate +"sá"+ endDate)
     const period = {};
     if (startDate != null && endDate != null) {
       period.createAt = {
@@ -152,7 +176,8 @@ const statistical = async (req, res) => {
       countReturns: await countReturns(period),
       countEvaluateNew: await countEvaluateNew(periodProduct1),
       revenue: revenue,
-      top5Product: await top5Product(),
+      top5Product: await top5Product(periodProduct1),
+      top5View:await top5SpXemNhieuNhat(periodProduct1)
     };
     res.status(200).json(result);
   } catch (error) {

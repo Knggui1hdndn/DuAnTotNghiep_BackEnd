@@ -94,6 +94,7 @@ const purchase = async (req, res) => {
         phoneNumber: phoneNumber,
         totalAmount: intoMoney,
         status: status.WAIT_FOR_CONFIRMATION,
+        createAt:Date.now()
       });
       await newOrders.save();
 
@@ -145,6 +146,7 @@ const purchase = async (req, res) => {
       name: name,
       phoneNumber: phoneNumber,
       totalAmount: totalAmount,
+      createAt:Date.now(),
       status: status.WAIT_FOR_CONFIRMATION,
     });
     await newOrder.save();

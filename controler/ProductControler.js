@@ -9,10 +9,10 @@ const Favourite = require("../model/favourite");
 const { DetailOrder } = require("../model/order");
 
 const addProduct = async (req, res) => {
-  const { name, price, sold, sale, description, idCata } = req.body;
+  const { name, price,importPrice, sold, sale, description, idCata } = req.body;
   const newProduct = await new Product({
     name,
-    price,
+    price,importPrice,
     sold: 0,
     sale,
     description,
@@ -148,7 +148,8 @@ const updateImage = async (req, res) => {
   }
 };
 const addImageProduct = async (req, res) => {
-  const idProduct = req.params.idProduct;
+  try {
+    const idProduct = req.params.idProduct;
   const { color } = req.body;
   const host = req.get("host");
   const filePath = req.protocol + "://" + host + "/" + req.file.path;
@@ -158,8 +159,17 @@ const addImageProduct = async (req, res) => {
     image: filePath,
   }).save();
   res.status(201).send(imageProduct);
+  } catch (error) {
+    res.status(400).send("Xảy ra lỗi");
+  }
 };
-
+const addView = async (idProduct) => {
+  const product = await Product.findOneAndUpdate(
+    { _id: idProduct },
+    { $inc: { view: 1 } },
+    { new: true }
+  );
+ };
 const getImageProduct = async (req, res) => {
   const idProduct = req.params.idProduct;
   const images = await ImageProduct.find({ idProduct });
@@ -489,5 +499,5 @@ module.exports = {
   updateProduct,
   calculateTotalProduct,
   getAll,
-  visibilityProduct,
+  visibilityProduct,addView
 };

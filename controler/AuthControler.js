@@ -156,11 +156,12 @@ const LoginUser = async (req, res) => {
   const email = req.body.account;
   const password = req.body.password;
   var roleType = req.query.roleType;
-  if (roleType!=null) {
+  if (roleType) {
     roleType = "ADMIN";
   } else {
     roleType = "USER";
   }
+
   try {
     const user = await User.findOne({
       $or: [{ email: email }, { phoneNumber: email }],roleType:roleType });

@@ -7,6 +7,11 @@ const productSchema = new mongoose.Schema({
   price: Number,
   sold: Number,
   sale: Number,
+  importPrice: Number,
+  view: {
+    type: Number,
+    default: 0,
+  },
   star: {
     type: Number,
     default: 0.0,
