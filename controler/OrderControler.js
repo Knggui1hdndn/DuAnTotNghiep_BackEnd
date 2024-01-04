@@ -73,7 +73,15 @@ const getOrderByStatus = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+const getAllOrder = async (req, res) => {
+  try {
+    const order = await Order.find({ idUser: req.params.idUser, status: { $ne: status.HOLLOW } });
 
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
 const purchase = async (req, res) => {
   try {
     const { address, name, phoneNumber } = req.body.orderRequest;
@@ -94,7 +102,7 @@ const purchase = async (req, res) => {
         phoneNumber: phoneNumber,
         totalAmount: intoMoney,
         status: status.WAIT_FOR_CONFIRMATION,
-        createAt:Date.now()
+        createAt: Date.now(),
       });
       await newOrders.save();
 
@@ -146,7 +154,7 @@ const purchase = async (req, res) => {
       name: name,
       phoneNumber: phoneNumber,
       totalAmount: totalAmount,
-      createAt:Date.now(),
+      createAt: Date.now(),
       status: status.WAIT_FOR_CONFIRMATION,
     });
     await newOrder.save();
@@ -255,13 +263,22 @@ const getCountNotiAndOrderDetails = async (req, res) => {
 };
 
 const updateProductWhenStatusOrder = async (idOrder, statuss) => {
-  if (statuss === status.CANCEL || statuss === status.WAIT_FOR_CONFIRMATION||statuss === status.RETURNS) {
+  if (
+    statuss === status.CANCEL ||
+    statuss === status.WAIT_FOR_CONFIRMATION ||
+    statuss === status.RETURNS
+  ) {
     const detailsOrder = await DetailOrder.find({ idOrder: idOrder });
     const updateSold = detailsOrder.map(({ idProduct, quantity }) => ({
       updateOne: {
         filter: { _id: idProduct },
         update: {
-          $inc: { sold: statuss === status.CANCEL||statuss === status.RETURNS ? -quantity : quantity },
+          $inc: {
+            sold:
+              statuss === status.CANCEL || statuss === status.RETURNS
+                ? -quantity
+                : quantity,
+          },
         },
         upsert: true,
       },
@@ -273,7 +290,10 @@ const updateProductWhenStatusOrder = async (idOrder, statuss) => {
           filter: { _id: idImageProductQuantity },
           update: {
             $inc: {
-              quantity: statuss === status.CANCEL||statuss === status.RETURNS ? quantity : -quantity,
+              quantity:
+                statuss === status.CANCEL || statuss === status.RETURNS
+                  ? quantity
+                  : -quantity,
             },
           },
           upsert: true,
@@ -620,26 +640,24 @@ const getOrderAndSearch = async (req, res) => {
       isPay,
       isGetAll,
     } = req.query;
-    let   statuss   = req.query.status;
+    let statuss = req.query.status;
 
     const searchConditions = {};
- 
+
     if (startDate && endDate) {
       searchConditions.createAt = {
         $gte: moment(startDate).startOf("day"),
         $lte: moment(endDate).endOf("day"),
       };
     }
-     
+
     if (statuss === undefined) {
       searchConditions.status = { $ne: status.HOLLOW };
-    }else{
+    } else {
       searchConditions.status = statuss;
     }
-    
- 
-   
-     if (isPay) {
+
+    if (isPay) {
       searchConditions.isPay = isPay;
     }
     if (orderCode) {
@@ -649,7 +667,7 @@ const getOrderAndSearch = async (req, res) => {
     if (phoneNumber) {
       searchConditions.phoneNumber = { $regex: new RegExp(phoneNumber, "i") };
     }
-    console.log( searchConditions)
+    console.log(searchConditions);
 
     const result = await Order.find(searchConditions).sort({ createAt: -1 });
 
@@ -731,5 +749,7 @@ module.exports = {
   updatePayment,
   updateStatusOrder,
   getOrder,
-  addLadingCode,updateProductWhenStatusOrder
+  addLadingCode,
+  updateProductWhenStatusOrder,
+  getAllOrder,
 };

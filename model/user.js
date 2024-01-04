@@ -11,6 +11,7 @@ const AuthType = {
 const RoleType = {
   ADMIN: "ADMIN",
   USER: "USER",
+  MEMBER:"MEMBER"
 };
 
 const userSchema = new mongoose.Schema({

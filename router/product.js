@@ -20,7 +20,7 @@ const upload = multer({
   }),
 });
 
-router.use(passport.authenticate("jwt", { session: false }));
+// router.use(passport.authenticate("jwt", { session: false }));
 router.route("/search").get(ProductControler.searchProduct);
 router
 .route("/visibility")
@@ -59,5 +59,5 @@ router
   .delete(ProductControler.deleteFavourite)
   .get(ProductControler.getAllFavourites);
 
-
+router.route("/getProductByIdCate/:idCategory").get(ProductControler.getProductByIdCate2)
 module.exports = router;

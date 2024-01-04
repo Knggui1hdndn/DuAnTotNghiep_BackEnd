@@ -311,7 +311,26 @@ const getAllFavourites = async (req, res, next) => {
     res.status(400).json({ error: error.message });
   }
 };
-
+const getProductByIdCate2 = async (req, res, next) => {
+  // Set skip to 0 if req.query.skip is not provided
+ 
+  const idCategory = req.params.idCategory; // Assuming the category ID is in the route parameter
+  try {
+    const products = await Product.find({ idCata: idCategory, status: true })
+      .populate({
+        path: "idCata",
+        select: "category",
+      })
+      
+    .select("-productDetails")
+   
+  
+    res.json(products);
+  } catch (error) {
+    // Handle any errors that occur during the query
+    res.status(500).json({ error: "Server error" });
+  }
+};
 const getProductByIdCate = async (req, res, next) => {
   // Set skip to 0 if req.query.skip is not provided
   const skip = req.query.skip == null ? 0 : parseInt(req.query.skip);
@@ -499,5 +518,5 @@ module.exports = {
   updateProduct,
   calculateTotalProduct,
   getAll,
-  visibilityProduct,addView
+  visibilityProduct,addView,getProductByIdCate2
 };

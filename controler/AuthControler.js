@@ -9,9 +9,9 @@ const SendEmail = require("../services/sendEmail.js");
 dotenv.config();
 const GOOGLE_CLIENT_ID =
   "470422080037-a8nm0h5fs6tqo1p6p0chpv2co02jirvb.apps.googleusercontent.com";
-  const accountSid = "ACa6de830808fa1f3989a8140b87937031";
-  const authToken =  "b54bbcf64721a2ab61c04bd185e80952";
-  const verifySid = "VA999c76ae3c784af8d499962020be0754";
+const accountSid = "ACa6de830808fa1f3989a8140b87937031";
+const authToken = "b54bbcf64721a2ab61c04bd185e80952";
+const verifySid = "VA999c76ae3c784af8d499962020be0754";
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 const twilio = require("twilio")(accountSid, authToken);
 
@@ -107,13 +107,15 @@ const authenticationGoogle = async (req, res, next) => {
 };
 
 const signUpLocal = async (req, res, next) => {
-  const { username, phoneNumber, password, address } = req.body;
+  const { username, phoneNumber, password, address  } = req.body;
   var roleType = req.query.roleType;
-
-  if (roleType) {
-    roleType = "ADMIN";
-  } else {
-    roleType = "USER";
+  console.log(roleType)
+  if (roleType !== "MEMBER") {
+    if (roleType) {
+      roleType = "ADMIN";
+    } else {
+      roleType = "USER";
+    }
   }
   try {
     const existingUser = await User.findOne({
@@ -164,13 +166,15 @@ const LoginUser = async (req, res) => {
 
   try {
     const user = await User.findOne({
-      $or: [{ email: email }, { phoneNumber: email }],roleType:roleType });
-       console.log(roleType +"  "+email);
+      $or: [{ email: email }, { phoneNumber: email }],
+      roleType: roleType,
+    });
+    console.log(roleType + "  " + email);
     if (!user) {
       res.status(400).json({ error: "Account không hợp lệ" });
     } else {
-      if(user.status===false){
-     return   res.status(400).json({ error: "Tài khoản của bạn đã bị khóa" });
+      if (user.status === false) {
+        return res.status(400).json({ error: "Tài khoản của bạn đã bị khóa" });
       }
       await TokenFcm.findOneAndUpdate(
         { idUser: user._id },
@@ -198,7 +202,7 @@ const verifyGoogleToken = async (idToken) => {
       idToken: idToken,
       audience: GOOGLE_CLIENT_ID, // Điều chỉnh audience theo client ID của bạn
     });
- 
+
     const payload = ticket.getPayload();
     const userId = payload.sub;
     const picture = payload.picture;

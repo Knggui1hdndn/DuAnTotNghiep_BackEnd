@@ -51,9 +51,12 @@ const status = {
   HOLLOW: "Rỗng",
 };
 
-
 const orderSchema = new mongoose.Schema({
-  idUser: { 
+  idUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  confirmer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },

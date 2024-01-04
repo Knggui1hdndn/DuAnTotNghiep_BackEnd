@@ -6,7 +6,7 @@ const passport = require("passport");
 const passportConfig = require("../middelwares/passport.js");
 router.route("/purchase").put(OrderControler.updatePayment);
 
-router.use(passport.authenticate("jwt", { session: false }));
+  router.use(passport.authenticate("jwt", { session: false }));
 router
   .route("/detail-order")
   .get(OrderControler.getDetailsOrders)
@@ -28,4 +28,5 @@ router
 router.route("/search").get(OrderControler.getOrderAndSearch);
 router.route("/purchase").post(OrderControler.purchase);
 router.route("/listOrder").get(OrderControler.getOrder);
+router.route("/all/:idUser").get(OrderControler.getAllOrder);
 module.exports = router;
