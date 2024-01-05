@@ -20,9 +20,16 @@ const upload = multer({
   }),
 });
 
-router.use(passport.authenticate("jwt", { session: false }));
+//router.use(passport.authenticate("jwt", { session: false }));
 router
   .route("/")
   .get(ChatController.getListChat)
   .post(upload.array("images"),ChatController.addImage)
+  router
+  .route("/all")
+  .get(ChatController.getListChat)
+
+  router
+  .route("/user-chat")
+  .get(ChatController.getUserChat)
   module.exports=router
