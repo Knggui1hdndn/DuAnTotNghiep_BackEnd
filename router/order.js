@@ -29,4 +29,5 @@ router.route("/search").get(OrderControler.getOrderAndSearch);
 router.route("/purchase").post(OrderControler.purchase);
 router.route("/listOrder").get(OrderControler.getOrder);
 router.route("/all/:idUser").get(OrderControler.getAllOrder);
+router.route("/confirmer/:idOrder").post(OrderControler.confirmer)
 module.exports = router;

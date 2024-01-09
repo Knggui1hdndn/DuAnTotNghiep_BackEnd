@@ -107,9 +107,9 @@ const authenticationGoogle = async (req, res, next) => {
 };
 
 const signUpLocal = async (req, res, next) => {
-  const { username, phoneNumber, password, address  } = req.body;
+  const { username, phoneNumber, password, address } = req.body;
   var roleType = req.query.roleType;
-  console.log(roleType)
+  console.log(roleType);
   if (roleType !== "MEMBER") {
     if (roleType) {
       roleType = "ADMIN";
@@ -158,11 +158,16 @@ const LoginUser = async (req, res) => {
   const email = req.body.account;
   const password = req.body.password;
   var roleType = req.query.roleType;
-  if (roleType) {
-    roleType = "ADMIN";
-  } else {
-    roleType = "USER";
+  console.log(roleType)
+  if (roleType !== "MEMBER") {
+    if (roleType == "ADMIN") {
+      roleType = "ADMIN";
+    }
+    if (roleType == "USER") {
+      roleType = "USER";
+    }
   }
+  console.log(roleType)
 
   try {
     const user = await User.findOne({

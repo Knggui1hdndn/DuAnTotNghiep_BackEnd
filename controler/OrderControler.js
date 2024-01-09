@@ -75,7 +75,10 @@ const getOrderByStatus = async (req, res) => {
 };
 const getAllOrder = async (req, res) => {
   try {
-    const order = await Order.find({ idUser: req.params.idUser, status: { $ne: status.HOLLOW } });
+    const order = await Order.find({
+      idUser: req.params.idUser,
+      status: { $ne: status.HOLLOW },
+    });
 
     res.status(200).json(order);
   } catch (error) {
@@ -733,9 +736,23 @@ const getKeyByValue = (value) => {
   }
   return null; // Trả về null nếu không tìm thấy giá trị
 };
+const confirmer = async (req, res) => {
+  const idOrder = req.params.idOrder;
+  const order = await Order.findOneAndUpdate(
+    { _id: idOrder, confirmer: null },
+    { $set: { confirmer: req.user._id } },
+    { new: true }
+  );
 
+  if (!order) {
+    res.status(404).send("The order has been confirmed");
+  } else {
+    res.status(200).send("Confirmed successfully");
+  }
+};
 module.exports = {
   getOrderAndSearch,
+  confirmer,
   cancelOrder,
   checkBuyNow,
   processDetailsOrder,

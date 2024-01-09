@@ -59,6 +59,7 @@ const orderSchema = new mongoose.Schema({
   confirmer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    default:null
   },
   createAt: {
     type: Number,

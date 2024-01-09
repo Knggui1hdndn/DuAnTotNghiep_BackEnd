@@ -7,7 +7,10 @@ const productSchema = new mongoose.Schema({
   price: Number,
   sold: Number,
   sale: Number,
-  importPrice: Number,
+  importPrice:{
+    type:Number,
+    default:0
+  },
   view: {
     type: Number,
     default: 0,
@@ -113,7 +116,9 @@ productSchema.pre("save", async function (next) {
           },
         }
       );
-    } catch (error) {}
+    } catch (error) {
+      console.log(error.message)
+    }
   }
 
   next();

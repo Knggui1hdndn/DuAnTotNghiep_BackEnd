@@ -5,7 +5,6 @@ const Evaluate = require("../model/evaluate.js");
 
 const User = require("../model/user.js");
 const countAllSp = async (periodProduct) => {
-  console.log(periodProduct);
   const count = await Product.countDocuments(periodProduct);
   return count;
 };
@@ -22,7 +21,6 @@ const countProductSold = async (period) => {
   const orders = await Order.find(period).select("_id");
 
   const orderIds = orders.map((order) => order._id);
-
   const countProductSold = await DetailOrder.aggregate([
     {
       $match: {
@@ -58,7 +56,7 @@ const getCountByStatus = async (period, status) => {
   const count = await Order.countDocuments(period);
   return count;
 };
-
+const countOrdersSuccessfullyDeliveredByStaff = async (period) => {};
 const countWaitForConfirmation = async (period) => {
   return getCountByStatus(period, status.WAIT_FOR_CONFIRMATION);
 };
@@ -82,7 +80,7 @@ const countCancel = async (period) => {
 const countReturns = async (period) => {
   return getCountByStatus(period, status.RETURNS);
 };
- 
+
 const top5Product = async (period) => {
   const query = Product.find(period)
     .populate({
@@ -107,7 +105,7 @@ const top5Product = async (period) => {
   return modifiedResult;
 };
 const top5SpXemNhieuNhat = async (period) => {
-  const query = Product.find(period)
+  const query = Product.find( )
     .populate({
       path: "idCata",
       select: "category", // Chỉ lấy trường "name" từ bảng "category"
@@ -134,7 +132,7 @@ const moment = require("moment");
 const statistical = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    console.log(startDate +"sá"+ endDate)
+    console.log(startDate + "sá" + endDate);
     const period = {};
     if (startDate != null && endDate != null) {
       period.createAt = {
@@ -177,7 +175,7 @@ const statistical = async (req, res) => {
       countEvaluateNew: await countEvaluateNew(periodProduct1),
       revenue: revenue,
       top5Product: await top5Product(periodProduct1),
-      top5View:await top5SpXemNhieuNhat(periodProduct1)
+      top5View: await top5SpXemNhieuNhat( ),
     };
     res.status(200).json(result);
   } catch (error) {

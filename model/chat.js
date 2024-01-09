@@ -14,7 +14,10 @@ const chatSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User", // Tham chiếu đến model User
   },
-  isSeen: Boolean,
+  isSeen: {
+    type: Boolean,
+    default:false, // Tham chiếu đến model User
+  },
   timeSend: Number,
   url: [String],
   isToUser: {
