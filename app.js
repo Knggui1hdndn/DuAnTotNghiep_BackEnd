@@ -20,8 +20,7 @@ module.exports = admin;
 const cors = require("cors");
 
 const app = express();
-const server = http.createServer(app);
-dotenv.config();
+
 // Set up MongoDB connection
 //exam :
 const Categorys = require("./model/category"); // Import your Product model
@@ -37,7 +36,6 @@ const corsOpts = {
   exposedHeaders: ["Authorization"],
 
   methods: ["GET", "POST", "PUT", "DELETE"],
-
   allowedHeaders: [
     "Origin",
     "Content-Type",
@@ -56,7 +54,7 @@ const mongoURI =
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
-      console.log("Connected to MongoDB");
+    console.log("Connected to MongoDB");
     ImageProducts.find({
       image: { $ne: null, $not: { $type: 4 } },
       image: { $regex: oldIP },
@@ -100,14 +98,14 @@ mongoose
   })
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-const io = require("socket.io")(server);
-
 // Set up Socket.io
 const users = {};
-socket(io, users);
 
 app.use(cors(corsOpts));
-
+const server = http.createServer(app);
+dotenv.config();
+const io = require("socket.io")(server,{cors:{origin:"*",methods:["GET","POST"],credentials:true,allowedHeaders:["Access-Control-Allow-Origin:209.97.149.47"]}});
+socket(io, users);
 // Middleware
 app.use(logger("dev"));
 app.use(bodyParser.json());
@@ -120,7 +118,7 @@ const usersRoutes = require("./router/user");
 const authRoutes = require("./router/auth");
 const productRoutes = require("./router/product");
 const order = require("./router/order");
-  const chat = require("./router/chat.js");
+const chat = require("./router/chat.js");
 const evaluate = require("./router/evaluate");
 const categories = require("./router/categories");
 const notification = require("./router/notification");
@@ -135,7 +133,7 @@ app.use("/evaluate", evaluate);
 app.use("/users", usersRoutes);
 app.use("/auth", authRoutes);
 app.use("/statistical", static);
-  app.use("/chat", chat);
+app.use("/chat", chat);
 
 // 404 Not Found middleware
 app.use((req, res, next) => {

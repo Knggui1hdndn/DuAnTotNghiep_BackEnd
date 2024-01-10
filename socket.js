@@ -10,11 +10,10 @@ module.exports = (io) => {
   io.on("connection", (socket) => {
     console.log("A user connection: " + socket.id);
     const idSocket = socket.id;
-    if (socket.handshake.auth.id !== null) {
-      users.push({
-        idUser: socket.handshake.auth.id,
-        idSocket: idSocket,
-      });
+ 
+    if (socket.handshake.auth.id !== undefined) {
+   
+      socket.join( socket.handshake.auth.id);
     } else {
       socket.join("shop");
     }
@@ -25,8 +24,7 @@ module.exports = (io) => {
       if (message.isToUser === false) {
         io.sockets.to("shop").emit("receive_message", message);
       } else {
-        const targetUser = users.find((user) => user.idUser === message.idUser);
-        io.sockets.to(targetUser.idSocket).emit("receive_message", message);
+         io.sockets.to(message.receiver).emit("receive_message", message);
       }
       await ChatControler.saveChat(message);
     });

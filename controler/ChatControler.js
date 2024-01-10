@@ -45,21 +45,16 @@ const addImage = async (req, res) => {
 
 const getListChat = async (req, res) => {
   try {
-    const idUser = req.user._id;
+    const idUser = req.query.id;
 
     const listChat = await Chat.find({
       $or: [{ sender: idUser }, { receiver: idUser }],
     }).sort({ timeSend: 1 });
 
-    console.log(listChat);
-    res.status(200).json(listChat);
+     res.status(200).json(listChat);
   } catch (e) {
-    const listChat = await Chat.find({
-      $or: [{ sender: req.query.idUser }, { receiver: req.query.idUser }],
-    }).sort({ timeSend: 1 });
-
-    console.log(listChat);
-    res.status(200).json(listChat);
+    
+    
   }
 };
 
