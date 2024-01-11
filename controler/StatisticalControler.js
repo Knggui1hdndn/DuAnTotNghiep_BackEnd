@@ -56,7 +56,28 @@ const getCountByStatus = async (period, status) => {
   const count = await Order.countDocuments(period);
   return count;
 };
-const countOrdersSuccessfullyDeliveredByStaff = async (period) => {};
+const totalProfit = async (period) => {
+  period.status = status.DELIVERED;
+  const order = await Order.find(period);
+  const orderIdsArray = order.map((order) => order._id.toString());
+
+  const detailOrders = await DetailOrder.find({
+    idOrder: { $in: orderIdsArray },
+  }).populate("idProduct").exec();
+  console.log(detailOrders);
+  const totalProfit = detailOrders.reduce((acc, order) => {
+       const quantitySold = order.quantity;
+      const price = order.idProduct.price;
+      const importPrice = order.idProduct.importPrice;
+
+      const orderProfit = quantitySold * price - quantitySold * importPrice;
+
+      acc += orderProfit;
+ 
+    return acc;
+  }, 0);
+  return totalProfit;
+};
 const countWaitForConfirmation = async (period) => {
   return getCountByStatus(period, status.WAIT_FOR_CONFIRMATION);
 };
@@ -105,7 +126,7 @@ const top5Product = async (period) => {
   return modifiedResult;
 };
 const top5SpXemNhieuNhat = async (period) => {
-  const query = Product.find( )
+  const query = Product.find()
     .populate({
       path: "idCata",
       select: "category", // Chỉ lấy trường "name" từ bảng "category"
@@ -173,9 +194,11 @@ const statistical = async (req, res) => {
       countCancel: await countCancel(period),
       countReturns: await countReturns(period),
       countEvaluateNew: await countEvaluateNew(periodProduct1),
-      revenue: revenue,
+      top5View: await top5SpXemNhieuNhat(),
       top5Product: await top5Product(periodProduct1),
-      top5View: await top5SpXemNhieuNhat( ),
+      revenue: revenue,
+      profit: await totalProfit(periodProduct1),
+    
     };
     res.status(200).json(result);
   } catch (error) {
