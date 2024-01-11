@@ -30,4 +30,5 @@ router.route("/purchase").post(OrderControler.purchase);
 router.route("/listOrder").get(OrderControler.getOrder);
 router.route("/all/:idUser").get(OrderControler.getAllOrder);
 router.route("/confirmer/:idOrder").post(OrderControler.confirmer)
+router.route("/:idMember").get(OrderControler.getOrderMember)
 module.exports = router;

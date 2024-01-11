@@ -50,7 +50,7 @@ const countUserNew = async (period) => {
   const count = await User.countDocuments(period);
   return count;
 };
-
+ 
 const getCountByStatus = async (period, status) => {
   period.status = status;
   const count = await Order.countDocuments(period);
@@ -78,6 +78,64 @@ const totalProfit = async (period) => {
   }, 0);
   return totalProfit;
 };
+const calculateYearlyProfits = async (req,res) => {
+  const yearlyProfits = [];
+
+  for (let month = 1; month <= 12; month++) {
+    try {
+      const monthlyProfit = await totalProfitByMonth(req.query.year, month);
+    yearlyProfits.push({ month, profit: monthlyProfit });
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
+
+  res.send(yearlyProfits)
+};
+
+const totalProfitByMonth = async (year, month) => {
+ 
+ 
+
+const startOfMonth = moment(year + "-" + month + "-1").startOf("day").toDate().getTime();
+var  endOfMonth ;
+ if( parseInt(month)  ===12){
+  endOfMonth = moment(year + "-" + (parseInt(month) ) + "-30").endOf("day").toDate().getTime();
+}else{
+  endOfMonth= moment(year + "-" + (parseInt(month) + 1) + "-1").endOf("day").toDate().getTime()
+}
+const period = {
+  createAt: {
+    $gte: startOfMonth,
+    $lt: endOfMonth,
+  },
+  status: status.DELIVERED,
+};
+
+  
+
+  const orders = await Order.find(period);
+  const orderIdsArray = orders.map((order) => order._id.toString());
+
+  const detailOrders = await DetailOrder.find({
+    idOrder: { $in: orderIdsArray },
+  }).populate("idProduct").exec();
+
+  const totalProfit = detailOrders.reduce((acc, order) => {
+    const quantitySold = order.quantity;
+    const price = order.idProduct.price;
+    const importPrice = order.idProduct.importPrice;
+
+    const orderProfit = quantitySold * (price - importPrice);
+
+    acc += orderProfit;
+    return acc;
+  }, 0);
+
+  return totalProfit;
+};
+
+
 const countWaitForConfirmation = async (period) => {
   return getCountByStatus(period, status.WAIT_FOR_CONFIRMATION);
 };
@@ -149,6 +207,7 @@ const top5SpXemNhieuNhat = async (period) => {
   return modifiedResult;
 };
 const moment = require("moment");
+const e = require("express");
 
 const statistical = async (req, res) => {
   try {
@@ -208,5 +267,5 @@ const statistical = async (req, res) => {
 };
 
 module.exports = {
-  statistical,
+  statistical,calculateYearlyProfits
 };

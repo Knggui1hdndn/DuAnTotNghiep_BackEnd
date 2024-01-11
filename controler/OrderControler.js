@@ -632,6 +632,24 @@ const checkBuyNow = async (req, res, next) => {
 };
 const moment = require("moment");
 
+const getOrderMember = async (req, res) => {
+try {
+  const result = await Order.find({confirmer:req.params.idMember}).sort({ createAt: -1 });
+  const formattedResult = result.map((item) => ({
+    ...item.toObject(),
+    createAt: moment(item.createAt)
+      .startOf("second")
+      .format("YYYY-MM-DD HH:mm:ss"),
+  }));
+  res.status(200).send(formattedResult)
+
+} catch (error) {
+  res.status(400).send(error)
+
+}
+}
+
+
 const getOrderAndSearch = async (req, res) => {
   try {
     let {
@@ -768,5 +786,5 @@ module.exports = {
   getOrder,
   addLadingCode,
   updateProductWhenStatusOrder,
-  getAllOrder,
+  getAllOrder,getOrderMember
 };

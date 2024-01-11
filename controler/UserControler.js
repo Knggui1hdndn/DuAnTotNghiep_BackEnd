@@ -105,6 +105,16 @@ const getUser = async (req, res, next) => {
   }
 };
 
+const getNhanVien = async (req, res, next) => {
+  try {
+    const users = await User.find({ roleType: "MEMBER" });
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 const generateQrPay = async (req, res, next) => {
   const { idOrder, recreate } = req.query;
   const now = Date.now();
@@ -189,5 +199,5 @@ module.exports = {
   searchProduct,
   updateProfile,
   getUser,
-  updateStatusUser,
+  updateStatusUser,getNhanVien
 };

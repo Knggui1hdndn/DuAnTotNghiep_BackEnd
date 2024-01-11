@@ -26,5 +26,6 @@ router
   .route("/editaccount")
   .post(upload.single("avatar"), UserControler.updateProfile);
 
-router.route("/listUser").get(UserControler.getUser);
+  router.route("/listUser").get(UserControler.getUser);
+  router.route("/listMember").get(UserControler.getNhanVien);
 module.exports = router;
