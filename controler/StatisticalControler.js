@@ -216,8 +216,8 @@ const statistical = async (req, res) => {
     const period = {};
     if (startDate != null && endDate != null) {
       period.createAt = {
-        $gte: moment(startDate).startOf("day"),
-        $lte: moment(endDate).endOf("day"),
+        $gte: moment(startDate).startOf("day").toDate().getTime(),
+        $lte: moment(endDate).endOf("day").toDate().getTime(),
       };
     }
 
