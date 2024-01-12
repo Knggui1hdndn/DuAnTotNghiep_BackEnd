@@ -223,7 +223,7 @@ const statistical = async (req, res) => {
 
     if (req.query.isGetAll === "true") {
       period.createAt = {
-        $lte: moment(Date.now()).endOf("day"),
+        $lte: moment(Date.now()).endOf("day").toDate().getTime(),
       };
     } else if (req.query.isGetAll === "false") {
       return res.json([]);
