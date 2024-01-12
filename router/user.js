@@ -28,4 +28,6 @@ router
 
   router.route("/listUser").get(UserControler.getUser);
   router.route("/listMember").get(UserControler.getNhanVien);
+  router.route("/totalCountOrder/:idMember").get(UserControler.getTotalCountOrderSuccessMember);
+  router.route("/successfulDeliveries").get(UserControler.getSuccessfulDeliveries);
 module.exports = router;

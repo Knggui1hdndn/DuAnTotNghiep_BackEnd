@@ -5,10 +5,80 @@ const { Product } = require("../model/product");
 const GenerateOtp = require("../services/generateOtp");
 const schedule = require("node-schedule"); // Thêm "schedule"
 const { error } = require("console");
-const { updateProductWhenStatusOrder
-} = require("../controler/OrderControler");
+const { updateProductWhenStatusOrder } = require("../controler/OrderControler");
 const NotificationControler = require("../controler/Notification");
 const { Order, DetailOrder, payments, status } = require("../model/order");
+const getTotalCountOrderSuccessMember = async (req, res, next) => {
+  const { startDate, endDate } = req.query;
+  const period = {};
+
+  if (startDate != null && endDate != null) {
+    period.createAt = {
+      $gte: moment(startDate).startOf("day"),
+      $lte: moment(endDate).endOf("day"),
+    };
+  }
+
+  period.status = status.DELIVERED;
+  period.confirmer = req.params.idMember;
+  const ok = await Order.countDocuments(period);
+
+  res.status(200).json(ok);
+};
+
+const getSuccessfulDeliveries = async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const period = {};
+
+  if (startDate != null && endDate != null) {
+    period.createAt = {
+      $gte: moment(startDate).startOf("day"),
+      $lte: moment(endDate).endOf("day"),
+    };
+  }
+
+  // Fix the assignment of the status field and add the correct confirmer field
+  period.status = status.DELIVERED;
+// Thực hiện truy vấn để lấy tổng số đơn hàng thành công của mỗi nhân viên
+var totalCountByMember = await Order.aggregate([
+  {
+    $match: period,
+  },
+  {
+    $group: {
+      _id: "$confirmer", // Thay 'confirmer' bằng trường tên nhân viên trong mô hình Order của bạn
+      totalCount: { $sum: 1 },
+    },
+  },
+]);
+
+// Chuyển đổi các _id sang chuỗi để sử dụng trong $in
+const userIds = totalCountByMember.map((item) => item._id.toString());
+
+console.log(totalCountByMember);
+console.log(userIds);
+
+// Lấy thông tin nhân viên từ collection User
+const usersInfo = await User.find({ _id: { $in: userIds } });
+
+// Tạo đối tượng mapping giữa _id và name
+const idToNameMap = usersInfo.reduce((acc, user) => {
+  acc[user._id.toString()] = user.name; // Thay 'name' bằng trường tên trong mô hình User
+  return acc;
+}, {});
+
+// Tạo kết quả cuối cùng với tên nhân viên
+const result = totalCountByMember.map((item) => ({
+  id:item._id,
+  name: idToNameMap[item._id.toString()], // Sử dụng mapping để lấy tên từ _id
+  totalCount: item.totalCount,
+}));
+
+console.log(result);
+
+  res.status(200).json(result);
+};
+
 const updateStatusUser = async (req, res, next) => {
   try {
     if (req.body.status == null) {
@@ -123,13 +193,13 @@ const generateQrPay = async (req, res, next) => {
   try {
     // Find and update the order
     var order;
-    if ( recreate==="false") {
-      console.log("recreate1"+recreate)
+    if (recreate === "false") {
+      console.log("recreate1" + recreate);
       order = await Order.findOne({
         _id: idOrder,
       });
     } else {
-      console.log("recreate"+recreate)
+      console.log("recreate" + recreate);
       order = await Order.findByIdAndUpdate(
         idOrder,
         {
@@ -199,5 +269,8 @@ module.exports = {
   searchProduct,
   updateProfile,
   getUser,
-  updateStatusUser,getNhanVien
+  getTotalCountOrderSuccessMember,
+  updateStatusUser,
+  getNhanVien,
+  getSuccessfulDeliveries,
 };
