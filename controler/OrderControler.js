@@ -633,22 +633,21 @@ const checkBuyNow = async (req, res, next) => {
 const moment = require("moment");
 
 const getOrderMember = async (req, res) => {
-try {
-  const result = await Order.find({confirmer:req.params.idMember}).sort({ createAt: -1 });
-  const formattedResult = result.map((item) => ({
-    ...item.toObject(),
-    createAt: moment(item.createAt)
-      .startOf("second")
-      .format("YYYY-MM-DD HH:mm:ss"),
-  }));
-  res.status(200).send(formattedResult)
-
-} catch (error) {
-  res.status(400).send(error)
-
-}
-}
-
+  try {
+    const result = await Order.find({ confirmer: req.params.idMember }).sort({
+      createAt: -1,
+    });
+    const formattedResult = result.map((item) => ({
+      ...item.toObject(),
+      createAt: moment(item.createAt)
+        .startOf("second")
+        .format("YYYY-MM-DD HH:mm:ss"),
+    }));
+    res.status(200).send(formattedResult);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+};
 
 const getOrderAndSearch = async (req, res) => {
   try {
@@ -719,15 +718,19 @@ const updateStatusOrder = async (req, res, next) => {
   try {
     const { idOrder } = req.query;
     const statuss = req.query.status;
-
-    const order = await Order.findByIdAndUpdate(
-      idOrder,
-      { status: statuss },
+    var update = { status: statuss };
+    if (statuss === status.RETURNS || status.CANCEL === statuss) {
+      update.confirmer = null;
+    }
+    console.log(status === status.RETURNS)
+    const order = await Order.findOneAndUpdate(
+      { _id: idOrder, confirmer: { $ne: null } },
+      update,
       { new: true }
     );
 
     if (!order) {
-      return res.status(404).json({ error: "Order not found" });
+      return res.status(404).json({ error: "Update không thành công" });
     }
     await updateProductWhenStatusOrder(order._id, statuss);
     await NotificationControler.sendNotification(
@@ -786,5 +789,6 @@ module.exports = {
   getOrder,
   addLadingCode,
   updateProductWhenStatusOrder,
-  getAllOrder,getOrderMember
+  getAllOrder,
+  getOrderMember,
 };

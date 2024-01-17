@@ -22,10 +22,52 @@ const getTotalCountOrderSuccessMember = async (req, res, next) => {
   }
 
   period.status = status.DELIVERED;
-  period.confirmer = req.params.idMember;
-  const ok = await Order.countDocuments(period);
-
-  res.status(200).json(ok);
+  period.confirmer = req.user._id;
+  var totalCountByMember = await Order.aggregate([
+    {
+      $match: period,
+    },
+    {
+      $group: {
+        _id: "$confirmer",  
+        totalCount: { $sum: 1 },
+        totalAmount:{ $sum: "$totalAmount" }
+      },
+    },
+  ]);
+  
+  // Chuyển đổi các _id sang chuỗi để sử dụng trong $in
+  const userIds = totalCountByMember.map((item) => item._id.toString());
+  
+  console.log(totalCountByMember);
+  console.log(userIds);
+  
+  // Lấy thông tin nhân viên từ collection User
+  const usersInfo = await User.find({ _id: { $in: userIds } });
+  
+  // Tạo đối tượng mapping giữa _id và name
+  const idToNameMap = usersInfo.reduce((acc, user) => {
+    acc[user._id.toString()] = user.name; // Thay 'name' bằng trường tên trong mô hình User
+    return acc;
+  }, {});
+  
+  // Tạo kết quả cuối cùng với tên nhân viên
+  const result = totalCountByMember.map((item) => ({
+    id:item._id,
+    name: idToNameMap[item._id.toString()], // Sử dụng mapping để lấy tên từ _id
+    totalCount: item.totalCount,
+    totalAmount: item.totalAmount,
+  }));
+  
+  const formattedResult = result.length > 0 ? result[0] : {
+    id:req.user._id,
+    name: req.user.name, // Sử dụng mapping để lấy tên từ _id
+    totalCount: 0,
+    totalAmount: 0,
+  };
+  
+    res.status(200).json(formattedResult);
+ 
 };
 
 const getSuccessfulDeliveries = async (req, res) => {
@@ -48,8 +90,9 @@ var totalCountByMember = await Order.aggregate([
   },
   {
     $group: {
-      _id: "$confirmer", // Thay 'confirmer' bằng trường tên nhân viên trong mô hình Order của bạn
+      _id: "$confirmer",  
       totalCount: { $sum: 1 },
+      totalAmount:{ $sum: "$totalAmount" }
     },
   },
 ]);
@@ -74,6 +117,7 @@ const result = totalCountByMember.map((item) => ({
   id:item._id,
   name: idToNameMap[item._id.toString()], // Sử dụng mapping để lấy tên từ _id
   totalCount: item.totalCount,
+  totalAmount: item.totalAmount,
 }));
 
 console.log(result);
