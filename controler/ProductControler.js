@@ -10,7 +10,7 @@ const { DetailOrder } = require("../model/order");
 
 const addProduct = async (req, res) => {
   const { name, price,importPrice, sold, sale, description, idCata } = req.body;
-  const newProduct = await new Product({
+   const newProduct = await new Product({
     name,
     price,importPrice,
     sold: 0,

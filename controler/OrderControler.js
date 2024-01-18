@@ -718,11 +718,32 @@ const updateStatusOrder = async (req, res, next) => {
   try {
     const { idOrder } = req.query;
     const statuss = req.query.status;
+
+    const orderOne = await Order.findOne({ _id: idOrder });
+    console.log( "oksokoasks",
+    orderOne.isPay === true);
+    if (
+      orderOne.confirmer === null  
+    ){
+      return res.status(404).json({ error: "Đơn hàng chưa có người nhận " });
+    }
+    if (
+      orderOne.isPay === true &&
+      orderOne.payments === payments.TRANSFER &&
+      statuss === status.CANCEL && orderOne.status !== status.DELIVERED 
+    ){
+      return res.status(404).json({ error: "Không thể hủy đơn hàng" });
+    }
+      
+    if (orderOne.isPay === false && orderOne.payments === payments.TRANSFER && statuss === status.CONFIRMED){
+      return res.status(404).json({ error: "Đơn hàng chưa thanh toán onl" });
+    }
     var update = { status: statuss };
     if (statuss === status.RETURNS || status.CANCEL === statuss) {
       update.confirmer = null;
     }
-    console.log(status === status.RETURNS)
+    
+      
     const order = await Order.findOneAndUpdate(
       { _id: idOrder, confirmer: { $ne: null } },
       update,
@@ -730,7 +751,7 @@ const updateStatusOrder = async (req, res, next) => {
     );
 
     if (!order) {
-      return res.status(404).json({ error: "Update không thành công" });
+      return res.status(400).json({ error: "Update không thành công" });
     }
     await updateProductWhenStatusOrder(order._id, statuss);
     await NotificationControler.sendNotification(

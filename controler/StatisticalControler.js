@@ -50,7 +50,7 @@ const countUserNew = async (period) => {
   const count = await User.countDocuments(period);
   return count;
 };
- 
+
 const getCountByStatus = async (period, status) => {
   period.status = status;
   const count = await Order.countDocuments(period);
@@ -63,63 +63,68 @@ const totalProfit = async (period) => {
 
   const detailOrders = await DetailOrder.find({
     idOrder: { $in: orderIdsArray },
-  }).populate("idProduct").exec();
+  })
+    .populate("idProduct")
+    .exec();
   console.log(detailOrders);
   const totalProfit = detailOrders.reduce((acc, order) => {
-       const quantitySold = order.quantity;
-      const price = order.idProduct.price;
-      const importPrice = order.idProduct.importPrice;
-
-      const orderProfit = quantitySold * price - quantitySold * importPrice;
-
-      acc += orderProfit;
- 
+    const quantitySold = order.quantity;
+    const price = order.idProduct.price;
+    const importPrice = order.idProduct.importPrice;
+    const orderProfit = quantitySold * price - quantitySold * importPrice;
+    acc += orderProfit;
     return acc;
   }, 0);
   return totalProfit;
 };
-const calculateYearlyProfits = async (req,res) => {
+const calculateYearlyProfits = async (req, res) => {
   const yearlyProfits = [];
 
   for (let month = 1; month <= 12; month++) {
     try {
       const monthlyProfit = await totalProfitByMonth(req.query.year, month);
-    yearlyProfits.push({ month, profit: monthlyProfit });
+      yearlyProfits.push({ month, profit: monthlyProfit });
     } catch (error) {
-      console.log(error.message)
+      console.log(error.message);
     }
   }
 
-  res.send(yearlyProfits)
+  res.send(yearlyProfits);
 };
 
 const totalProfitByMonth = async (year, month) => {
- 
- 
-
-const startOfMonth = moment(year + "-" + month + "-1").startOf("day").toDate().getTime();
-var  endOfMonth ;
- if( parseInt(month)  ===12){
-  endOfMonth = moment(year + "-" + (parseInt(month) ) + "-30").endOf("day").toDate().getTime();
-}else{
-  endOfMonth= moment(year + "-" + (parseInt(month) + 1) + "-1").endOf("day").toDate().getTime()
-}
-const period = {
-  createAt: {
-    $gte: startOfMonth,
-    $lt: endOfMonth,
-  },
-  status: status.DELIVERED,
-};
-
-  
+  const startOfMonth = moment(year + "-" + month + "-1")
+    .startOf("day")
+    .toDate()
+    .getTime();
+  var endOfMonth;
+  if (parseInt(month) === 12) {
+    endOfMonth = moment(year + "-" + parseInt(month) + "-30")
+      .endOf("day")
+      .toDate()
+      .getTime();
+  } else {
+    endOfMonth = moment(year + "-" + (parseInt(month) + 1) + "-1")
+      .endOf("day")
+      .toDate()
+      .getTime();
+  }
+  const period = {
+    createAt: {
+      $gte: startOfMonth,
+      $lt: endOfMonth,
+    },
+    status: status.DELIVERED,
+  };
 
   const orders = await Order.find(period);
   const orderIdsArray = orders.map((order) => order._id.toString());
 
   const detailOrders = await DetailOrder.find({
     idOrder: { $in: orderIdsArray },
-  }).populate("idProduct").exec();
+  })
+    .populate("idProduct")
+    .exec();
 
   const totalProfit = detailOrders.reduce((acc, order) => {
     const quantitySold = order.quantity;
@@ -134,7 +139,6 @@ const period = {
 
   return totalProfit;
 };
-
 
 const countWaitForConfirmation = async (period) => {
   return getCountByStatus(period, status.WAIT_FOR_CONFIRMATION);
@@ -164,7 +168,7 @@ const top5Product = async (period) => {
   const query = Product.find(period)
     .populate({
       path: "idCata",
-      select: "category", // Chỉ lấy trường "name" từ bảng "category"
+      select: "category",
     })
     .select("-productDetails")
     .limit(5)
@@ -254,10 +258,9 @@ const statistical = async (req, res) => {
       countReturns: await countReturns(period),
       countEvaluateNew: await countEvaluateNew(periodProduct1),
       top5View: await top5SpXemNhieuNhat(),
-      top5Product: await top5Product(periodProduct1),
+      top5Product: await getSoldProductsDetailsByDeliveredOrders(periodProduct1),
       revenue: revenue,
       profit: await totalProfit(periodProduct1),
-    
     };
     res.status(200).json(result);
   } catch (error) {
@@ -265,7 +268,61 @@ const statistical = async (req, res) => {
     return res.status(500).send(error.message);
   }
 };
+const getSoldProductsDetailsByDeliveredOrders = async (periodProduct1) => {
+  try {
+    periodProduct1.status=status.DELIVERED
+    const soldProductsDetails = await Order.aggregate([
+      { $match: periodProduct1 },
+      {
+        $lookup: {
+          from: 'detailorders',
+          localField: '_id',
+          foreignField: 'idOrder',
+          as: 'details',
+        },
+      },
+      { $unwind: '$details' },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'details.idProduct',
+          foreignField: '_id',
+          as: 'product',
+        },
+      },
+      { $unwind: '$product' },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'product.idCata',
+          foreignField: '_id',
+          as: 'category',
+        },
+      },
+      { $unwind: '$category' },
+      {
+        $group: {
+          _id: {
+            productId: '$details.idProduct',
+          },
+          name: { $first: '$product.name' },
+          idCata: { $first: '$category.category' },
+          price: { $first: '$details.price' },
+          sold: { $sum: '$details.quantity' },
+        },
+      },
+    ]);
+
+    console.log(soldProductsDetails);
+    return soldProductsDetails;
+  } catch (error) {
+    console.error('Error getting sold products details by delivered orders:', error);
+    throw error;
+  }
+};
+
 
 module.exports = {
-  statistical,calculateYearlyProfits
+  statistical,
+  calculateYearlyProfits,
 };

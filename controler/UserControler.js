@@ -71,7 +71,8 @@ const getTotalCountOrderSuccessMember = async (req, res, next) => {
 };
 
 const getSuccessfulDeliveries = async (req, res) => {
-  const { startDate, endDate } = req.query;
+  try {
+    const { startDate, endDate } = req.query;
   const period = {};
 console.log(startDate, endDate)
   if (startDate && endDate ) {
@@ -123,6 +124,10 @@ const result = totalCountByMember.map((item) => ({
 console.log(result);
 
   res.status(200).json(result);
+  } catch (error) {
+    res.status(404).json(error);
+
+  }
 };
 
 const updateStatusUser = async (req, res, next) => {
